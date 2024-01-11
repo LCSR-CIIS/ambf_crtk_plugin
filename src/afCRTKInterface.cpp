@@ -67,66 +67,66 @@ void CRTKInterface::add_allInterface(string a_namespace){
 
 void CRTKInterface::add_measured_cp(string a_namespace){
     string baseName;
-    if(a_namespace = ""){
+    if(a_namespace == ""){
         baseName = m_nameSpace;
     }
     else{
-        baseName = a_namespace;
+        baseName = m_nameSpace + "/" + a_namespace;
     }
     m_measuredCPPub = m_rosNode->advertise<geometry_msgs::TransformStamped>(baseName + "/measured_cp", 1);
 }
 
 void CRTKInterface::add_measured_js(string a_namespace){
     string baseName;
-    if(a_namespace = ""){
+    if(a_namespace == ""){
         baseName = m_nameSpace;
     }
     else{
-        baseName = a_namespace;
+        baseName = m_nameSpace + "/" + a_namespace;
     }
     m_measuredJSPub = m_rosNode->advertise<sensor_msgs::JointState>(baseName+ "/measured_js", 1);
 }
 
-void CRTKInterface::add_measeasured_cf(string a_namespace){
+void CRTKInterface::add_measured_cf(string a_namespace){
     string baseName;
-    if(a_namespace = ""){
+    if(a_namespace == ""){
         baseName = m_nameSpace;
     }
     else{
-        baseName = a_namespace;
+        baseName = m_nameSpace + "/" + a_namespace;
     }
     m_measuredCFPub = m_rosNode->advertise<geometry_msgs::WrenchStamped>(baseName + "measured_cf", 1);
 }
 
 void CRTKInterface::add_servo_cp(string a_namespace){
     string baseName;
-    if(a_namespace = ""){
+    if(a_namespace == ""){
         baseName = m_nameSpace;
     }
     else{
-        baseName = a_namespace;
+        baseName = m_nameSpace + "/" + a_namespace;
     }
     m_servoCPSub = m_rosNode->subscribe(baseName + "/servo_cp", 1, &CRTKInterface::servo_CPCallback, this);
 }
 
 void CRTKInterface::add_servo_jp(string a_namespace){
     string baseName;
-    if(a_namespace = ""){
+    if(a_namespace == ""){
         baseName = m_nameSpace;
     }
     else{
-        baseName = a_namespace;
+        baseName = m_nameSpace + "/" + a_namespace;
     }
     m_servoJPSub = m_rosNode->subscribe(baseName + "/servo_jp", 1, &CRTKInterface::servo_JPCallback, this);
 }
 
 void CRTKInterface::add_servo_cf(string a_namespace){
     string baseName;
-    if(a_namespace = ""){
+    if(a_namespace == ""){
         baseName = m_nameSpace;
     }
     else{
-        baseName = a_namespace;
+        baseName = m_nameSpace + "/" + a_namespace;
     }
     m_servoCFSub = m_rosNode->subscribe(baseName + "/servo_cf", 1 , &CRTKInterface::servo_CFCallback, this);
 }
@@ -192,7 +192,7 @@ void CRTKInterface::measured_js(vector<double>& q){
     
     string jointName;
     for (int idx = 0 ; idx < q.size() ; idx++){
-        jointName.append(str(idx));
+        jointName.append(to_string(idx));
         m_measured_js.position[idx] = q[idx];
     }
     m_measuredJSPub.publish(m_measured_js);

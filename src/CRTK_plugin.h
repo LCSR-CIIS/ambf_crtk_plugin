@@ -61,6 +61,17 @@ namespace p_opt = boost::program_options;
 using namespace std;
 using namespace ambf;
 
+
+class Interface{
+    public:
+        Interface();
+        CRTKInterface* crtkInterface;
+        vector<afJointPtr> m_measuredJointsPtr, m_servoJointsPtr;
+
+        // AMBF RigidBody Pointers
+        afRigidBodyPtr m_measuredCPRB, m_measuredCFRB, m_servoCPRB, m_servoCFRB;
+};
+
 class afCRTKPlugin: public afSimulatorPlugin{
     public:
         afCRTKPlugin();
@@ -73,7 +84,7 @@ class afCRTKPlugin: public afSimulatorPlugin{
 
     protected:
         int readConfigFile(string config_filepath);
-        void InitInterface(InitInterface(YAML::Node& node, CRTKInterface* crtkInterface, string ifname);
+        int InitInterface(YAML::Node& node, Interface* interface, string ifname);
 
     // private:
         // Pointer to the world
@@ -83,10 +94,8 @@ class afCRTKPlugin: public afSimulatorPlugin{
         string m_current_filepath;
 
         int m_num;
-        vector<CRTKInterface> m_Interface;
-
-        vector<afJointPtr> m_jointsPtr;
-
+        vector<Interface*> m_interface;
+        
 };
 
 

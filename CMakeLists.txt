@@ -52,7 +52,10 @@ add_definitions(${AMBF_DEFINITIONS})
 
 # For spacenav control plugin
 add_library(ambf_crtk_plugin SHARED
-    src/camera_panel_manager.cpp
+    src/CRTK_plugin.cpp
+    src/CRTK_plugin.h
+    src/afCRTKInterface.cpp
+    src/afCRTKInterface.h
     )
 
 target_link_libraries (ambf_crtk_plugin ${Boost_LIBRARIES} ${AMBF_LIBRARIES})

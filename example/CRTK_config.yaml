@@ -10,15 +10,18 @@ interface:
 REMS/Research:
   measured_cp:
     namespace: delta
+    rigidbody: drill_tip
   measured_js:
     joints:
     - joint_1
     - joint_2
     - joint_3
   measured_cf:
+    rigidbody: drill_tip
 
 Robot:
   servo_cp:
+    rigidbody: origin
   servo_jp:
     joints:
     - joint_1
@@ -26,7 +29,10 @@ Robot:
     - joint_3
   servo_cf:
     namespace: compliance
+    rigidbody: drill_tip
+
 
 Atracsys:
   servo_cp:
+    rigidbody: opticaltracker
 

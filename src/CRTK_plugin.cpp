@@ -72,7 +72,7 @@ int afCRTKPlugin::init(int argc, char** argv, const afWorldPtr a_afWorld){
     string file_path = __FILE__;
     m_current_filepath = file_path.substr(0, file_path.rfind("/"));
 
-    // Initialize Camera
+    // Store Pointer for the world
     m_worldPtr = a_afWorld;
     
     // When config file is defined
@@ -80,7 +80,7 @@ int afCRTKPlugin::init(int argc, char** argv, const afWorldPtr a_afWorld){
         return readConfigFile(config_filepath);
     }
 
-    // If the configuration file is not defined provide error
+    // If the configuration file is not defined pop error
     else{
         cerr << "ERROR! NO configuration file specified." << endl;
         return -1;
@@ -96,6 +96,40 @@ void afCRTKPlugin::graphicsUpdate(){
 }
 
 void afCRTKPlugin::physicsUpdate(double dt){
+    // Loop for all the interface
+    for (size_t index = 0; index < m_interface.size(); index ++){
+        // measured_cp
+        if (m_interface[index]->m_measuredCPRB){
+            cTransform measured_cp = m_interface[index]->m_measuredCPRB->getLocalTransform();
+            m_interface[index]->crtkInterface->measured_cp(measured_cp);
+        }
+
+        // measured_js
+        if (m_interface[index]->m_measuredJointsPtr.size() > 0){
+            
+        }
+
+        // measured_cf
+        if (m_interface[index]->m_measuredCFRB){
+
+        }
+
+        // servo_cp
+        if (m_interface[index]->m_servoCPRB){
+
+        }
+
+        // servo_jp
+        if (m_interface[index]->m_servoJointsPtr.size() > 0){
+
+        }
+
+        // servo_cf
+        if (m_interface[index]->m_servoCFRB){
+
+        }
+    }
+    
 
 }
 
@@ -105,62 +139,124 @@ int afCRTKPlugin::readConfigFile(string config_filepath){
     m_num = node["interface"].size();
     for (size_t i = 0; i < m_num; i++){
         string ifname = node["interface"][i].as<string>();
-        CRTKInterface* crtkInterface = new CRTKInterface(ifname);
-        InitInterface(node, crtkInterface, ifname);
-        m_Interface.push_back(crtkInterface);
+        Interface* interface = new Interface();
+        interface->crtkInterface = new CRTKInterface(ifname);
+        m_interface.push_back(interface);
+        
+        if (InitInterface(node, interface, ifname) == -1)
+            return -1;
     }
+    return 1;
 }
 
-void afCRTKPlugin::InitInterface(YAML::Node& node, CRTKInterface* crtkInterface, string ifname){
+int afCRTKPlugin::InitInterface(YAML::Node& node, Interface* interface, string ifname){
     if (node[ifname]["measured_cp"]){
         if(node[ifname]["measured_cp"]["namespace"])
-            crtkInterface->add_measured_cp(node[ifname]["measured_cp"]["namespace"].as<string>())
+            interface->crtkInterface->add_measured_cp(node[ifname]["measured_cp"]["namespace"].as<string>());
         else
-            crtkInterface->add_measured_cp("")
+            interface->crtkInterface->add_measured_cp("");
+
+        if(node[ifname]["measured_cp"]["rigidbody"]){
+            interface->m_measuredCPRB = m_worldPtr->getRigidBody(node[ifname]["measured_cp"]["rigidbody"].as<string>());
+            
+            if(!interface->m_measuredCPRB){
+                cerr << ">> ERROR!! No RigidBody Named" << node[ifname]["measured_cp"]["rigidbody"].as<string>() << " for measured_cp" << endl;
+                return -1;
+            }
+        }
+
+        else{  
+            cerr << ">> ERROR!! No RigidBody specified for measured_cp" << endl;
+            return -1;
+        }
     }
 
     else if (node[ifname]["measured_js"]){
         if(node[ifname]["measured_js"]["namespace"])
-            crtkInterface->add_measured_js(node[ifname]["measured_js"]["namespace"].as<string>())
+            interface->crtkInterface->add_measured_js(node[ifname]["measured_js"]["namespace"].as<string>());
         else
-            crtkInterface->add_measured_js("")
+            interface->crtkInterface->add_measured_js("");
 
         for (size_t j = 0; j < node[ifname]["measured_js"]["joints"].size(); j++){
-            m_measuredJointsPtr.push_back(m_worldPtr->getJoint(node[ifname]["measured_js"]["joints"][j].as<string>()))
+            interface->m_measuredJointsPtr.push_back(m_worldPtr->getJoint(node[ifname]["measured_js"]["joints"][j].as<string>()));
         }
     }
 
     if (node[ifname]["measured_cf"]){
         if(node[ifname]["measured_cf"]["namespace"])
-            crtkInterface->add_measured_cf(node[ifname]["measured_cf"]["namespace"].as<string>())
+            interface->crtkInterface->add_measured_cf(node[ifname]["measured_cf"]["namespace"].as<string>());
         else
-            crtkInterface->add_measured_cf("")
+            interface->crtkInterface->add_measured_cf("");
+
+        if(node[ifname]["measured_cf"]["rigidbody"]){
+            interface->m_measuredCFRB = m_worldPtr->getRigidBody(node[ifname]["measured_cf"]["rigidbody"].as<string>());
+            
+            if(!interface->m_measuredCFRB){
+                cerr << ">> ERROR!! No RigidBody Named" << node[ifname]["measured_cf"]["rigidbody"].as<string>() << " for measured_cf" << endl;
+                return -1;
+            }
+        }
+
+        else{  
+            cerr << ">> ERROR!! No RigidBody specified for measured_cf" << endl;
+            return -1;
+        }
     }
 
     if (node[ifname]["servo_cp"]){
         if(node[ifname]["servo_cp"]["namespace"])
-            crtkInterface->add_servo_cp(node[ifname]["servo_cp"]["namespace"].as<string>())
+            interface->crtkInterface->add_servo_cp(node[ifname]["servo_cp"]["namespace"].as<string>());
         else
-            crtkInterface->add_servo_cp("")
+            interface->crtkInterface->add_servo_cp("");
+
+        if(node[ifname]["servo_cp"]["rigidbody"]){
+            interface->m_servoCPRB = m_worldPtr->getRigidBody(node[ifname]["servo_cp"]["rigidbody"].as<string>());
+            
+            if(!interface->m_servoCPRB){
+                cerr << ">> ERROR!! No RigidBody Named" << node[ifname]["servo_cp"]["rigidbody"].as<string>() << " for servo_cp" << endl;
+                return -1;
+            }
+        }
+
+        else{  
+            cerr << ">> ERROR!! No RigidBody specified for servo_cp" << endl;
+            return -1;
+        }
     }
 
     if (node[ifname]["servo_jp"]){
         if(node[ifname]["servo_jp"]["namespace"])
-            crtkInterface->add_servo_jp(node[ifname]["servo_jp"]["namespace"].as<string>())
+            interface->crtkInterface->add_servo_jp(node[ifname]["servo_jp"]["namespace"].as<string>());
         else
-            crtkInterface->add_servo_jp("")
+            interface->crtkInterface->add_servo_jp("");
 
         for (size_t j = 0; j < node[ifname]["servo_jp"]["joints"].size(); j++){
-            m_servoJointsPtr.push_back(m_worldPtr->getJoint(node[ifname]["servo_js"]["joints"][j].as<string>()))
+            interface->m_servoJointsPtr.push_back(m_worldPtr->getJoint(node[ifname]["servo_js"]["joints"][j].as<string>()));
         }
     }
 
     if (node[ifname]["servo_cf"]){
         if(node[ifname]["servo_cf"]["namespace"])
-            crtkInterface->add_servo_cf(node[ifname]["servo_cf"]["namespace"].as<string>())
+            interface->crtkInterface->add_servo_cf(node[ifname]["servo_cf"]["namespace"].as<string>());
         else
-            crtkInterface->add_servo_cf("")
+            interface->crtkInterface->add_servo_cf("");
+
+        if(node[ifname]["servo_cf"]["rigidbody"]){
+            interface->m_servoCFRB = m_worldPtr->getRigidBody(node[ifname]["servo_cf"]["rigidbody"].as<string>());
+            
+            if(!interface->m_servoCFRB){
+                cerr << ">> ERROR!! No RigidBody Named" << node[ifname]["servo_cf"]["rigidbody"].as<string>() << " for servo_cf" << endl;
+                return -1;
+            }
+        }
+
+        else{  
+            cerr << ">> ERROR!! No RigidBody specified for servo_cp" << endl;
+            return -1;
+        }
     }
+
+    return 1;
 
 }
 

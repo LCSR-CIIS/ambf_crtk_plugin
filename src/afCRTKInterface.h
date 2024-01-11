@@ -52,6 +52,8 @@
 #include <math/CTransform.h>
 
 #include <afFramework.h>
+#include <ambf_server/RosComBase.h>
+
 
 
 using namespace chai3d;
@@ -81,13 +83,13 @@ public:
 
     // Query Command
     void measured_cp(cTransform &trans);
-    void measured_jp(vector<double>& force);
-    void measured_cf(vector<double>& q);
+    void measured_js(vector<double>& q);
+    void measured_cf(vector<double>& force);
 
     // Motion Command
     cTransform& servo_cp();
-    vector<double> servo_cf();
-    cVector3d& servo_jp();
+    vector<double> servo_jp();
+    cVector3d& servo_cf();
 
 
 private:
