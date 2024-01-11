@@ -1,0 +1,32 @@
+# AMBF CRTK configuration file template 
+# Author: Hisashi Ishida
+# Date: 01.10.2024
+
+interface:
+- REMS/Research
+- Robot
+- Atracsys
+
+REMS/Research:
+  measured_cp:
+    namespace: delta
+  measured_js:
+    joints:
+    - joint_1
+    - joint_2
+    - joint_3
+  measured_cf:
+
+Robot:
+  servo_cp:
+  servo_jp:
+    joints:
+    - joint_1
+    - joint_2
+    - joint_3
+  servo_cf:
+    namespace: compliance
+
+Atracsys:
+  servo_cp:
+
