@@ -59,15 +59,15 @@
 using namespace chai3d;
 using namespace std;
 
-class CRTKInterface{
+class afCRTKInterface{
 public:
-    CRTKInterface(string a_namespace);
-    ~CRTKInterface();
+    afCRTKInterface(string a_namespace);
+    ~afCRTKInterface();
 
     void init(string a_namespace);
     void add_allInterface(string a_namespace);
     void add_measured_cp(string a_namespace);
-    void add_measured_js(string a_namespace);
+    void add_measured_js(string a_namespace, vector<string> jointName);
     void add_measured_cf(string a_namespace);
     void add_servo_cp(string a_namespace);
     void add_servo_jp(string a_namespace);
@@ -87,9 +87,9 @@ public:
     void measured_cf(vector<double>& force);
 
     // Motion Command
-    cTransform& servo_cp();
-    vector<double> servo_jp();
-    vector<double> servo_cf();
+    bool servo_cp(cTransform & cp);
+    bool servo_jp(vector<double> & jp);
+    bool servo_cf(vector<double> & cf);
 
 
 private:
@@ -104,6 +104,10 @@ private:
     ros::Publisher m_measuredCFPub;
     
     string m_nameSpace;
+
+    bool m_is_servo_cp = false;
+    bool m_is_servo_jp = false;
+    bool m_is_servo_cf = false;
 
     cTransform m_servo_cp;
     vector<double> m_servo_jp;
