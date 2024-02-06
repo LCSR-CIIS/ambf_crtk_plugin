@@ -1,0 +1,29 @@
+# AMBF CRTK configuration file template 
+# Author: Hisashi Ishida
+# Date: 01.10.2024
+
+# Interfaces used for this plugin
+interface:
+- REMS/Research
+
+
+# For Interface "REMS/Research"
+REMS/Research:
+  measured_cp:
+    # Additonal namespace
+    # rostopic name will be "REMS/Research/delta/measured_cp" 
+    namespace: delta
+
+    # Name of Rigidbody in AMBF 
+    rigidbody: drill_tip
+
+  # measured_js:
+  #   # Name of joints in AMBF
+  #   joints:
+  #   - joint_1
+  #   - joint_2
+  #   - joint_3
+
+  # measured_cf:
+  #   # Name of Rigidbody in AMBF 
+  #   rigidbody: drill_tip
