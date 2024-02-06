@@ -15,15 +15,17 @@ REMS/Research:
     namespace: delta
 
     # Name of Rigidbody in AMBF 
-    rigidbody: drill_tip
+    rigidbody: Endoscope Tip
 
-  # measured_js:
-  #   # Name of joints in AMBF
-  #   joints:
-  #   - joint_1
-  #   - joint_2
-  #   - joint_3
+  measured_js:
+    # Name of joints in AMBF
+    joints:
+    - carriage3_joint
+    - carriage1_joint
+    - carriage2_joint
+    - roll_joint
 
-  # measured_cf:
-  #   # Name of Rigidbody in AMBF 
-  #   rigidbody: drill_tip
+
+  measured_cf:
+    # Name of Rigidbody in AMBF 
+    rigidbody: Endoscope Tip
