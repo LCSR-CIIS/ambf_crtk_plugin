@@ -106,27 +106,55 @@ void afCRTKPlugin::physicsUpdate(double dt){
 
         // measured_js
         if (m_interface[index]->m_measuredJointsPtr.size() > 0){
-            
+            vector<double> measured_js;
+            for  (size_t i = 0; i < m_interface[index]->m_measuredJointsPtr.size(); i++){
+                double jointPos = m_interface[index]->m_measuredJointsPtr[i]->getPosition();
+                measured_js.push_back(jointPos);
+            }
+            m_interface[index]->crtkInterface->measured_js(measured_js);
         }
 
         // measured_cf
         if (m_interface[index]->m_measuredCFRB){
-
+            btVector3 bt_measured_cf = m_interface[index]->m_measuredCFRB->m_estimatedForce;
+            vector<double> measured_cf{bt_measured_cf.getX(),bt_measured_cf.getY(),bt_measured_cf.getZ() };
+            m_interface[index]->crtkInterface->measured_cf(measured_cf);
         }
 
         // servo_cp
         if (m_interface[index]->m_servoCPRB){
 
+            cTransform servo_cp = m_interface[index]->crtkInterface->servo_cp();
+            // Change to btVector and Matrix
+            btTransform trans;
+            btVector3 btTrans;
+            
+            btTrans.setValue(servo_cp.getLocalPos().x(), servo_cp.getLocalPos().y(), servo_cp.getLocalPos().z());     
+            trans.setOrigin(btTrans);
+            cQuaternion quat;
+            quat.fromRotMat(servo_cp.getLocalRot());
+            btQuaternion btRot(quat.x,quat.y,quat.z,quat.w);
+            trans.setRotation(btRot);
+
+            btTransform Tcommand;
+            Tcommand = trans;
+            m_interface[index]->m_servoCPRB->m_bulletRigidBody->getMotionState()->setWorldTransform(Tcommand);
+            m_interface[index]->m_servoCPRB->m_bulletRigidBody->setWorldTransform(Tcommand);
         }
 
         // servo_jp
         if (m_interface[index]->m_servoJointsPtr.size() > 0){
-
+            vector<double> servo_jp = m_interface[index]->crtkInterface->servo_jp();
+            for  (size_t i = 0; i < m_interface[index]->m_servoJointsPtr.size(); i++){
+                m_interface[index]->m_servoJointsPtr[i]->commandPosition(servo_jp[i]);
+            }
         }
 
         // servo_cf
         if (m_interface[index]->m_servoCFRB){
-
+            vector<double> servo_cf = m_interface[index]->crtkInterface->servo_cf();
+            m_interface[index]->m_servoCFRB->applyForce(cVector3d(servo_cf[0], servo_cf[1], servo_cf[2]));
+            m_interface[index]->m_servoCFRB->applyTorque(cVector3d(servo_cf[3], servo_cf[4], servo_cf[5]));
         }
     }
     
@@ -265,5 +293,5 @@ void afCRTKPlugin::reset(){
 }
 
 bool afCRTKPlugin::close(){
-
+    return true;
 }

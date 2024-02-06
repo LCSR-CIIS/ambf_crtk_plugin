@@ -89,7 +89,7 @@ public:
     // Motion Command
     cTransform& servo_cp();
     vector<double> servo_jp();
-    cVector3d& servo_cf();
+    vector<double> servo_cf();
 
 
 private:
@@ -107,7 +107,7 @@ private:
 
     cTransform m_servo_cp;
     vector<double> m_servo_jp;
-    cVector3d m_servo_cf;
+    vector<double> m_servo_cf = vector<double>(6);
 
     geometry_msgs::PoseStamped m_measured_cp;
     sensor_msgs::JointState m_measured_js;

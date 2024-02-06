@@ -153,7 +153,12 @@ void CRTKInterface::servo_JPCallback(sensor_msgs::JointStateConstPtr msg){
 }
 
 void CRTKInterface::servo_CFCallback(geometry_msgs::WrenchStampedConstPtr msg){
-    m_servo_cf.set(msg->wrench.force.x, msg->wrench.force.y, msg->wrench.force.z);
+    m_servo_cf[0] = msg->wrench.force.x;
+    m_servo_cf[1] = msg->wrench.force.y;
+    m_servo_cf[2] = msg->wrench.force.z;
+    m_servo_cf[3] = msg->wrench.torque.x;
+    m_servo_cf[4] = msg->wrench.torque.y;
+    m_servo_cf[5] = msg->wrench.torque.z;
 }
 
 cTransform& CRTKInterface::servo_cp(){
@@ -164,7 +169,7 @@ vector<double> CRTKInterface::servo_jp(){
     return m_servo_jp;
 }
 
-cVector3d& CRTKInterface::servo_cf(){
+vector<double> CRTKInterface::servo_cf(){
     return m_servo_cf;
 }
 
