@@ -16,30 +16,33 @@ REMS/Research:
     namespace: delta
 
     # Name of Rigidbody in AMBF 
-    rigidbody: drill_tip
+    rigidbody: Endoscope Tip
 
   measured_js:
     # Name of joints in AMBF
     joints:
-    - joint_1
-    - joint_2
-    - joint_3
+    - carriage3_joint
+    - carriage1_joint
+    - carriage2_joint
+    - roll_joint
+
 
   measured_cf:
     # Name of Rigidbody in AMBF 
-    rigidbody: drill_tip
+    rigidbody: Endoscope Tip
 
 Robot:
   servo_cp:
     # Name of Rigidbody in AMBF 
-    rigidbody: origin
+    rigidbody: Endoscope Tip
   
   servo_jp:
     # Name of joints in AMBF 
     joints:
-    - joint_1
-    - joint_2
-    - joint_3
+    - carriage3_joint
+    - carriage1_joint
+    - carriage2_joint
+    - roll_joint
 
   servo_cf:
     # Additonal namespace
@@ -47,10 +50,9 @@ Robot:
     namespace: compliance
     
     # Name of Rigidbody in AMBF 
-    rigidbody: drill_tip
-
+    rigidbody: Endoscope Tip
 
 Atracsys:
   servo_cp:
     # Name of Rigidbody in AMBF 
-    rigidbody: opticaltracker
+    rigidbody: Endoscope Tip
