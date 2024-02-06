@@ -64,12 +64,12 @@ using namespace ambf;
 
 class Interface{
     public:
-        Interface();
-        CRTKInterface* crtkInterface;
+        Interface(string ifname);
+        afCRTKInterface* crtkInterface;
         vector<afJointPtr> m_measuredJointsPtr, m_servoJointsPtr;
 
         // AMBF RigidBody Pointers
-        afRigidBodyPtr m_measuredCPRB, m_measuredCFRB, m_servoCPRB, m_servoCFRB;
+        afRigidBodyPtr m_measuredCPRB = nullptr, m_measuredCFRB = nullptr, m_servoCPRB = nullptr, m_servoCFRB = nullptr;
 };
 
 class afCRTKPlugin: public afSimulatorPlugin{

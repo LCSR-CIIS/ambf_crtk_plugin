@@ -43,6 +43,9 @@
 
 #include "CRTK_plugin.h"
 
+Interface::Interface(string ifname){
+    crtkInterface = new afCRTKInterface(ifname);
+}
 
 afCRTKPlugin::afCRTKPlugin(){
     cout << "/*********************************************" << endl;
@@ -66,7 +69,7 @@ int afCRTKPlugin::init(int argc, char** argv, const afWorldPtr a_afWorld){
     }
 
     // Loading options 
-    string config_filepath = var_map["registration_config"].as<string>();
+    string config_filepath = var_map["conf"].as<string>();
 
     // Define path
     string file_path = __FILE__;
@@ -74,6 +77,10 @@ int afCRTKPlugin::init(int argc, char** argv, const afWorldPtr a_afWorld){
 
     // Store Pointer for the world
     m_worldPtr = a_afWorld;
+
+    // Improve the constratint
+    m_worldPtr->m_bulletWorld->getSolverInfo().m_erp = 1.0;  // improve out of plane error of joints
+    m_worldPtr->m_bulletWorld->getSolverInfo().m_erp2 = 1.0; // improve out of plane error of joints
     
     // When config file is defined
     if(!config_filepath.empty()){
@@ -117,44 +124,49 @@ void afCRTKPlugin::physicsUpdate(double dt){
         // measured_cf
         if (m_interface[index]->m_measuredCFRB){
             btVector3 bt_measured_cf = m_interface[index]->m_measuredCFRB->m_estimatedForce;
-            vector<double> measured_cf{bt_measured_cf.getX(),bt_measured_cf.getY(),bt_measured_cf.getZ() };
+            vector<double> measured_cf{bt_measured_cf.getX(),bt_measured_cf.getY(),bt_measured_cf.getZ(),0,0,0};
             m_interface[index]->crtkInterface->measured_cf(measured_cf);
         }
 
         // servo_cp
         if (m_interface[index]->m_servoCPRB){
+            cTransform servo_cp;
+            if(m_interface[index]->crtkInterface->servo_cp(servo_cp)){
+                // Change to btVector and Matrix
+                btTransform trans;
+                btVector3 btTrans;
+                
+                btTrans.setValue(servo_cp.getLocalPos().x(), servo_cp.getLocalPos().y(), servo_cp.getLocalPos().z());     
+                trans.setOrigin(btTrans);
+                cQuaternion quat;
+                quat.fromRotMat(servo_cp.getLocalRot());
+                btQuaternion btRot(quat.x,quat.y,quat.z,quat.w);
+                trans.setRotation(btRot);
 
-            cTransform servo_cp = m_interface[index]->crtkInterface->servo_cp();
-            // Change to btVector and Matrix
-            btTransform trans;
-            btVector3 btTrans;
-            
-            btTrans.setValue(servo_cp.getLocalPos().x(), servo_cp.getLocalPos().y(), servo_cp.getLocalPos().z());     
-            trans.setOrigin(btTrans);
-            cQuaternion quat;
-            quat.fromRotMat(servo_cp.getLocalRot());
-            btQuaternion btRot(quat.x,quat.y,quat.z,quat.w);
-            trans.setRotation(btRot);
-
-            btTransform Tcommand;
-            Tcommand = trans;
-            m_interface[index]->m_servoCPRB->m_bulletRigidBody->getMotionState()->setWorldTransform(Tcommand);
-            m_interface[index]->m_servoCPRB->m_bulletRigidBody->setWorldTransform(Tcommand);
+                btTransform Tcommand;
+                Tcommand = trans;
+                m_interface[index]->m_servoCPRB->m_bulletRigidBody->getMotionState()->setWorldTransform(Tcommand);
+                m_interface[index]->m_servoCPRB->m_bulletRigidBody->setWorldTransform(Tcommand);
+            }   
         }
 
         // servo_jp
         if (m_interface[index]->m_servoJointsPtr.size() > 0){
-            vector<double> servo_jp = m_interface[index]->crtkInterface->servo_jp();
-            for  (size_t i = 0; i < m_interface[index]->m_servoJointsPtr.size(); i++){
-                m_interface[index]->m_servoJointsPtr[i]->commandPosition(servo_jp[i]);
+            vector<double> servo_jp;
+            if(m_interface[index]->crtkInterface->servo_jp(servo_jp)){
+                for  (size_t i = 0; i < m_interface[index]->m_servoJointsPtr.size(); i++){
+                    m_interface[index]->m_servoJointsPtr[i]->commandPosition(servo_jp[i]);
+                }
             }
         }
 
         // servo_cf
         if (m_interface[index]->m_servoCFRB){
-            vector<double> servo_cf = m_interface[index]->crtkInterface->servo_cf();
-            m_interface[index]->m_servoCFRB->applyForce(cVector3d(servo_cf[0], servo_cf[1], servo_cf[2]));
-            m_interface[index]->m_servoCFRB->applyTorque(cVector3d(servo_cf[3], servo_cf[4], servo_cf[5]));
+            vector<double> servo_cf;
+            if(m_interface[index]->crtkInterface->servo_cf(servo_cf)){
+                m_interface[index]->m_servoCFRB->applyForce(cVector3d(servo_cf[0], servo_cf[1], servo_cf[2]));
+                m_interface[index]->m_servoCFRB->applyTorque(cVector3d(servo_cf[3], servo_cf[4], servo_cf[5]));
+            }
         }
     }
     
@@ -167,8 +179,8 @@ int afCRTKPlugin::readConfigFile(string config_filepath){
     m_num = node["interface"].size();
     for (size_t i = 0; i < m_num; i++){
         string ifname = node["interface"][i].as<string>();
-        Interface* interface = new Interface();
-        interface->crtkInterface = new CRTKInterface(ifname);
+        Interface* interface = new Interface(ifname);
+        // interface->crtkInterface = new CRTKInterface(ifname);
         m_interface.push_back(interface);
         
         if (InitInterface(node, interface, ifname) == -1)
@@ -188,7 +200,7 @@ int afCRTKPlugin::InitInterface(YAML::Node& node, Interface* interface, string i
             interface->m_measuredCPRB = m_worldPtr->getRigidBody(node[ifname]["measured_cp"]["rigidbody"].as<string>());
             
             if(!interface->m_measuredCPRB){
-                cerr << ">> ERROR!! No RigidBody Named" << node[ifname]["measured_cp"]["rigidbody"].as<string>() << " for measured_cp" << endl;
+                cerr << ">> ERROR!! No RigidBody Named " << node[ifname]["measured_cp"]["rigidbody"].as<string>() << " for measured_cp" << endl;
                 return -1;
             }
         }
@@ -199,15 +211,18 @@ int afCRTKPlugin::InitInterface(YAML::Node& node, Interface* interface, string i
         }
     }
 
-    else if (node[ifname]["measured_js"]){
-        if(node[ifname]["measured_js"]["namespace"])
-            interface->crtkInterface->add_measured_js(node[ifname]["measured_js"]["namespace"].as<string>());
-        else
-            interface->crtkInterface->add_measured_js("");
-
+    if (node[ifname]["measured_js"]){
+        vector<string> jointNames;
         for (size_t j = 0; j < node[ifname]["measured_js"]["joints"].size(); j++){
-            interface->m_measuredJointsPtr.push_back(m_worldPtr->getJoint(node[ifname]["measured_js"]["joints"][j].as<string>()));
+            string jointName = node[ifname]["measured_js"]["joints"][j].as<string>();
+            interface->m_measuredJointsPtr.push_back(m_worldPtr->getJoint(jointName));
+            jointNames.push_back(jointName);
         }
+
+        if(node[ifname]["measured_js"]["namespace"])
+            interface->crtkInterface->add_measured_js(node[ifname]["measured_js"]["namespace"].as<string>(), jointNames);
+        else
+            interface->crtkInterface->add_measured_js("", jointNames);
     }
 
     if (node[ifname]["measured_cf"]){
@@ -220,7 +235,7 @@ int afCRTKPlugin::InitInterface(YAML::Node& node, Interface* interface, string i
             interface->m_measuredCFRB = m_worldPtr->getRigidBody(node[ifname]["measured_cf"]["rigidbody"].as<string>());
             
             if(!interface->m_measuredCFRB){
-                cerr << ">> ERROR!! No RigidBody Named" << node[ifname]["measured_cf"]["rigidbody"].as<string>() << " for measured_cf" << endl;
+                cerr << ">> ERROR!! No RigidBody Named " << node[ifname]["measured_cf"]["rigidbody"].as<string>() << " for measured_cf" << endl;
                 return -1;
             }
         }
@@ -241,7 +256,7 @@ int afCRTKPlugin::InitInterface(YAML::Node& node, Interface* interface, string i
             interface->m_servoCPRB = m_worldPtr->getRigidBody(node[ifname]["servo_cp"]["rigidbody"].as<string>());
             
             if(!interface->m_servoCPRB){
-                cerr << ">> ERROR!! No RigidBody Named" << node[ifname]["servo_cp"]["rigidbody"].as<string>() << " for servo_cp" << endl;
+                cerr << ">> ERROR!! No RigidBody Named " << node[ifname]["servo_cp"]["rigidbody"].as<string>() << " for servo_cp" << endl;
                 return -1;
             }
         }
@@ -253,14 +268,17 @@ int afCRTKPlugin::InitInterface(YAML::Node& node, Interface* interface, string i
     }
 
     if (node[ifname]["servo_jp"]){
+        vector<string> jointNames;
+        for (size_t j = 0; j < node[ifname]["servo_jp"]["joints"].size(); j++){
+            string jointName = node[ifname]["servo_jp"]["joints"][j].as<string>();
+            jointNames.push_back(jointName);
+            interface->m_servoJointsPtr.push_back(m_worldPtr->getJoint(jointName));
+        }
+
         if(node[ifname]["servo_jp"]["namespace"])
             interface->crtkInterface->add_servo_jp(node[ifname]["servo_jp"]["namespace"].as<string>());
         else
             interface->crtkInterface->add_servo_jp("");
-
-        for (size_t j = 0; j < node[ifname]["servo_jp"]["joints"].size(); j++){
-            interface->m_servoJointsPtr.push_back(m_worldPtr->getJoint(node[ifname]["servo_js"]["joints"][j].as<string>()));
-        }
     }
 
     if (node[ifname]["servo_cf"]){
@@ -273,7 +291,7 @@ int afCRTKPlugin::InitInterface(YAML::Node& node, Interface* interface, string i
             interface->m_servoCFRB = m_worldPtr->getRigidBody(node[ifname]["servo_cf"]["rigidbody"].as<string>());
             
             if(!interface->m_servoCFRB){
-                cerr << ">> ERROR!! No RigidBody Named" << node[ifname]["servo_cf"]["rigidbody"].as<string>() << " for servo_cf" << endl;
+                cerr << ">> ERROR!! No RigidBody Named " << node[ifname]["servo_cf"]["rigidbody"].as<string>() << " for servo_cf" << endl;
                 return -1;
             }
         }
@@ -284,6 +302,7 @@ int afCRTKPlugin::InitInterface(YAML::Node& node, Interface* interface, string i
         }
     }
 
+    cerr << "Successfully initialized interface" << endl;
     return 1;
 
 }
