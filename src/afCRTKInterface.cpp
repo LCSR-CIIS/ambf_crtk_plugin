@@ -154,7 +154,10 @@ void afCRTKInterface::servo_CPCallback(geometry_msgs::PoseStampedConstPtr msg){
 }
 
 void afCRTKInterface::servo_JPCallback(sensor_msgs::JointStateConstPtr msg){
-    cout << "Callback function called." << endl;
+    // if (msg->position.size() != m_servo_jp.size()){
+    //     cerr << "ERROR! IN Measured JS, JOINT LENGTH MUST BE " << m_measured_js.name.size() << endl;
+    //     return;
+    // }
     m_servo_jp = msg->position;
     m_is_servo_jp = true;
 }
@@ -201,10 +204,10 @@ void afCRTKInterface::measured_cp(cTransform &trans){
 
 
 void afCRTKInterface::measured_js(vector<double>& q){
-    // if (q.size() > m_numJoints){
-    //     cerr << "ERROR! IN SERVO JP, JOINT LENGTH MUST BE GREATER THAN "<< m_numJoints << endl;
-    //     return;
-    // }
+    if (q.size() > m_measured_js.name.size()){
+        cerr << "ERROR! IN Measured JS, JOINT LENGTH MUST BE " << m_measured_js.name.size() << endl;
+        return;
+    }
     // Initialize the position value for the measured_js values
     m_measured_js.position.clear();
     for (int idx = 0 ; idx < q.size() ; idx++){
