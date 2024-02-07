@@ -79,8 +79,8 @@ int afCRTKPlugin::init(int argc, char** argv, const afWorldPtr a_afWorld){
     m_worldPtr = a_afWorld;
 
     // Improve the constratint
-    m_worldPtr->m_bulletWorld->getSolverInfo().m_erp = 1.0;  // improve out of plane error of joints
-    m_worldPtr->m_bulletWorld->getSolverInfo().m_erp2 = 1.0; // improve out of plane error of joints
+    m_worldPtr->m_bulletWorld->getSolverInfo().m_erp = 1.0;  
+    m_worldPtr->m_bulletWorld->getSolverInfo().m_erp2 = 1.0; 
     
     // When config file is defined
     if(!config_filepath.empty()){
