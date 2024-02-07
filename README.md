@@ -27,7 +27,7 @@ cd <ambf_exe_dir>
 ```
 
 ## 3. Configuration file
-You can specify your custom made configuration file to specify what kind of objects you want to control with which CRTK command.
+You are required to specify your custom made configuration file to specify what kind of objects you want to monitor/control with which CRTK command.
 ```CRTK_config.yaml
 
 # Interfaces used for this plugin
@@ -41,48 +41,60 @@ REMS/Research:
   measured_cp:
     # Additonal namespace
     # rostopic name will be "REMS/Research/delta/measured_cp" 
-    namespace: delta
+    namespace: delta        # <- This option is optional
 
     # Name of Rigidbody in AMBF 
-    rigidbody: drill_tip
+    rigidbody: Endoscope Tip
 
   measured_js:
     # Name of joints in AMBF
     joints:
-    - joint_1
-    - joint_2
-    - joint_3
+    - carriage3_joint
+    - carriage1_joint
+    - carriage2_joint
+    - roll_joint
+
 
   measured_cf:
     # Name of Rigidbody in AMBF 
-    rigidbody: drill_tip
+    rigidbody: Endoscope Tip
 
 Robot:
   servo_cp:
     # Name of Rigidbody in AMBF 
-    rigidbody: origin
+    rigidbody: Endoscope Tip
   
   servo_jp:
     # Name of joints in AMBF 
     joints:
-    - joint_1
-    - joint_2
-    - joint_3
+    - carriage3_joint
+    - carriage1_joint
+    - carriage2_joint
+    - roll_joint
 
   servo_cf:
     # Additonal namespace
     # rostopic name will be "Robot/compliance/servo_cf" 
-    namespace: compliance
+    namespace: compliance # <- This option is optional
     
     # Name of Rigidbody in AMBF 
-    rigidbody: drill_tip
-
+    rigidbody: Endoscope Tip
 
 Atracsys:
   servo_cp:
     # Name of Rigidbody in AMBF 
-    rigidbody: opticaltracker
+    rigidbody: Endoscope Tip
+```
 
+In this example, there will be the following rostopics:
+```
+/REMS/Research/delta/measured_cp
+/REMS/Research/measured_js
+/REMS/Research/measured_cf
+/Robot/servo_cp
+/Robot/servo_jp
+/Robot/compliance/servo_cf
+/Atracsys/servo_cp
 ```
 
 ## Trouble Shooting
