@@ -61,3 +61,10 @@ add_library(ambf_crtk_plugin SHARED
 target_link_libraries (ambf_crtk_plugin ${Boost_LIBRARIES} ${AMBF_LIBRARIES})
 set_property(TARGET ambf_crtk_plugin PROPERTY POSITION_INDEPENDENT_CODE TRUE)
 
+if(NOT BUILD_PLUGIN_WITH_ROS)
+    set(BUILD_PLUGIN_WITH_ROS TRUE)
+endif()
+
+if(BUILD_PLUGIN_WITH_ROS)
+    add_definitions(-DBUILD_WITH_ROS)
+endif()

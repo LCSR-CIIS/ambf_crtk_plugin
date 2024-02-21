@@ -12,8 +12,15 @@ Lets call the absolute location of this package as **<plugin_path>**. E.g. if yo
 ```bash
 git clone git@github.com:LCSR-CIIS/ambf_crtk_plugin.git
 cd ambf_crtk_plugin
-mkdir build && cd 
+mkdir build && cd build
+cmake .. -DBUILD_PLUGIN_WITH_ROS=False
 make
+```
+
+A simple package.xml has been included in this repository to enable catkin to find and build it **<plugin_path>** should be located within `catkin_ws/src/`.
+```bash
+cd <catkin_ws>
+catkin build ambf_spacenav_plugin
 ```
 
 ## 2. How to use your plugin
@@ -97,5 +104,11 @@ In this example, there will be the following rostopics:
 /Atracsys/servo_cp
 ```
 
-## Trouble Shooting
+## Example command
+```
+ambf_simulator -a ../3D-Slicer_ROS_Module_with_AMBF/AMBF_Plugin_3DSlicer/ADF/galen.yaml --plugins ./build/libambf_crtk_plugin.so --conf example/CRTK_config.yaml 
 
+```
+
+## Trouble Shooting
+Please refer to [AMBF helper](https://github.com/LCSR-CIIS/AMBF_helper) for installation procedure and how to debug the plugins.
