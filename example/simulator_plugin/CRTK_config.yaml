@@ -1,6 +1,8 @@
-# AMBF CRTK configuration file template 
+# AMBF CRTK configuration file template for CRTK_simulator_plugin
 # Author: Hisashi Ishida
-# Date: 01.10.2024
+# Date: 03.14.2024
+# Usage: add the path (build/lib_CRTK_simulator_plugin.so) and add --conf ../example/CRTK_config.yaml
+
 
 # Interfaces used for this plugin
 interface:
@@ -25,7 +27,6 @@ REMS/Research:
     - carriage1_joint
     - carriage2_joint
     - roll_joint
-
 
   measured_cf:
     # Name of Rigidbody in AMBF 

@@ -1,6 +1,8 @@
-# AMBF CRTK configuration file template 
+# AMBF CRTK configuration file template for CRTK_simulator_plugin
 # Author: Hisashi Ishida
-# Date: 01.10.2024
+# Date: 03.14.2024
+# Usage: add the path (build/lib_CRTK_simulator_plugin.so) and add --conf ../example/simulator_plugin/CRTK_config_simple.yaml
+
 
 # Interfaces used for this plugin
 interface:
