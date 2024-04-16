@@ -82,9 +82,9 @@ public:
     void servo_CFCallback(geometry_msgs::WrenchStampedConstPtr);
 
     // Query Command
-    void measured_cp(cTransform &trans);
+    void measured_cp(cTransform &trans, string name = "default");
     void measured_js(vector<double>& q);
-    void measured_cf(vector<double>& force);
+    void measured_cf(vector<double>& force, string name = "default");
 
     // Motion Command
     bool servo_cp(cTransform & cp);
@@ -98,10 +98,17 @@ private:
     ros::Subscriber m_servoJPSub;
     ros::Subscriber m_servoCFSub;
 
+    map<string, ros::Subscriber> m_servoCPSubMap;
+    map<string, ros::Subscriber> m_servoCFSubMap;
+
     // Publishers
     ros::Publisher m_measuredCPPub;
     ros::Publisher m_measuredJSPub;
     ros::Publisher m_measuredCFPub;
+
+    map<string, ros::Publisher> m_measuredCPPubMap;
+    map<string, ros::Publisher> m_measuredCFPubMap;
+
     
     string m_nameSpace;
 

@@ -74,6 +74,7 @@ void afCRTKInterface::add_measured_cp(string a_namespace){
         baseName = m_nameSpace + "/" + a_namespace;
     }
     m_measuredCPPub = m_rosNode->advertise<geometry_msgs::PoseStamped>(baseName + "/measured_cp", 1);
+    m_measuredCPPubMap[a_namespace] = m_rosNode->advertise<geometry_msgs::PoseStamped>(baseName + "/measured_cp", 1);
 }
 
 void afCRTKInterface::add_measured_js(string a_namespace, vector<string> jointNames){
@@ -101,6 +102,8 @@ void afCRTKInterface::add_measured_cf(string a_namespace){
         baseName = m_nameSpace + "/" + a_namespace;
     }
     m_measuredCFPub = m_rosNode->advertise<geometry_msgs::WrenchStamped>(baseName + "/measured_cf", 1);
+    m_measuredCFPubMap[a_namespace] = m_rosNode->advertise<geometry_msgs::WrenchStamped>(baseName + "/measured_cf", 1);
+    
 }
 
 void afCRTKInterface::add_servo_cp(string a_namespace){
@@ -112,6 +115,7 @@ void afCRTKInterface::add_servo_cp(string a_namespace){
         baseName = m_nameSpace + "/" + a_namespace;
     }
     m_servoCPSub = m_rosNode->subscribe(baseName + "/servo_cp", 1, &afCRTKInterface::servo_CPCallback, this);
+    m_servoCPSubMap[a_namespace] = m_rosNode->subscribe(baseName + "/servo_cp", 1, &afCRTKInterface::servo_CPCallback, this);
 }
 
 void afCRTKInterface::add_servo_jp(string a_namespace){
@@ -134,6 +138,7 @@ void afCRTKInterface::add_servo_cf(string a_namespace){
         baseName = m_nameSpace + "/" + a_namespace;
     }
     m_servoCFSub = m_rosNode->subscribe(baseName + "/servo_cf", 1 , &afCRTKInterface::servo_CFCallback, this);
+    m_servoCFSubMap[a_namespace] = m_rosNode->subscribe(baseName + "/servo_cp", 1, &afCRTKInterface::servo_CPCallback, this);
 }
 
         
@@ -187,7 +192,8 @@ bool afCRTKInterface::servo_cf(vector<double> & cf){
     return m_is_servo_cf;
 }
 
-void afCRTKInterface::measured_cp(cTransform &trans){
+void afCRTKInterface::measured_cp(cTransform &trans, string name){
+    
     m_measured_cp.pose.position.x = trans.getLocalPos().x();
     m_measured_cp.pose.position.y = trans.getLocalPos().y();
     m_measured_cp.pose.position.z = trans.getLocalPos().z();
@@ -199,7 +205,13 @@ void afCRTKInterface::measured_cp(cTransform &trans){
     m_measured_cp.pose.orientation.z = rot.z;
     m_measured_cp.pose.orientation.w = rot.w;
 
-    m_measuredCPPub.publish(m_measured_cp);
+    if (name == "default"){
+        m_measuredCPPub.publish(m_measured_cp);
+    }
+
+    else{
+        m_measuredCPPubMap[name].publish(m_measured_cp);
+    }
 }
 
 
@@ -216,7 +228,7 @@ void afCRTKInterface::measured_js(vector<double>& q){
     m_measuredJSPub.publish(m_measured_js);
 }
 
-void afCRTKInterface::measured_cf(vector<double>& force){
+void afCRTKInterface::measured_cf(vector<double>& force, string name){
 
     if (force.size() != 6){
         cerr << "ERROR! IN MEASURED_CF, FORCE HAS TO HAVE 6DOF." << endl;
@@ -229,7 +241,13 @@ void afCRTKInterface::measured_cf(vector<double>& force){
     m_measured_cf.wrench.torque.x = force[3];
     m_measured_cf.wrench.torque.y = force[4];
     m_measured_cf.wrench.torque.z = force[5];
+    
+    if (name == "default"){
+        m_measuredCFPub.publish(m_measured_cf);
+    }
 
-    m_measuredCFPub.publish(m_measured_cf);
-
+    else{
+        m_measuredCFPubMap[name].publish(m_measured_cf);
+    }
+    
 }
