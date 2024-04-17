@@ -90,8 +90,59 @@ int afCRTKSimulatorPlugin::init(int argc, char** argv, const afWorldPtr a_afWorl
 
     // If the configuration file is not defined pop error
     else{
-        cerr << "ERROR! NO configuration file specified." << endl;
-        return -1;
+        cerr << "WARNING! NO configuration file specified." << endl;
+        // Load every Model/Object in the world
+        // ModelMap: map<string, afModelPtr>
+        afModelMap* map = m_worldPtr->getModelMap();
+        for (auto it=map->begin(); it != map->end(); it++){
+        
+            //ChildrenMap: map<map<afType, map<string, afBaseObject*> >
+            afChildrenMap::iterator cIt;
+            afChildrenMap* childrenMap = it->second->getChildrenMap();
+
+            for(cIt = childrenMap->begin(); cIt != childrenMap->end(); ++cIt)
+            {   
+                for (auto it_child=cIt->second.begin(); it_child != cIt->second.end(); ++it_child){
+                    string wholeName = it_child->first;
+                    
+                    string objectType, objectName;
+                    string ns;
+                    vector<string> v;
+                    boost::split(v, wholeName, boost::is_any_of("/")); 
+                    if (v.size() ==3){
+                        objectType = v[3].substr(0, wholeName.find(" "));
+                        objectName = v[3].substr(wholeName.find(" ")+1);
+                        ns = "CRTK";
+                    }
+                    else if (v.size() > 3){
+                        objectType = wholeName.substr(0, wholeName.find(" "));
+                        objectType = objectType.substr(objectType.find_last_of("/")+1);
+                        objectName = wholeName.substr(wholeName.find(" ")+1);
+
+                        ns = v[3];
+                    }
+                    else
+                        return -1;
+                    cerr << wholeName << endl;
+                    cerr << objectType << endl;
+                    cerr << ns << endl;
+                    cerr << objectName << endl;
+                    cerr << int(it_child->second->getType()) << endl;
+
+                    Interface* interface = new Interface(ns);
+
+                    if (it_child->second->getType() == afType::RIGID_BODY){
+                        afRigidBodyPtr rigidBodyPtr = m_worldPtr->getRigidBody(objectName);
+                        interface->crtkInterface->add_measured_cp(objectName);           
+
+                    }
+
+                    m_interface.push_back(interface);
+
+                }
+            }
+        }
+        return 1;
     }
 }
 
@@ -110,7 +161,7 @@ void afCRTKSimulatorPlugin::physicsUpdate(double dt){
         if (m_interface[index]->m_measuredCPRBsPtr.size() > 0){
             for (size_t i = 0; i < m_interface[index]->m_measuredCPRBsPtr.size(); i++){
                 cTransform measured_cp = m_interface[index]->m_measuredCPRBsPtr[i]->getLocalTransform();
-                m_interface[index]->crtkInterface->measured_cp(measured_cp);
+                m_interface[index]->crtkInterface->measured_cp(measured_cp, getNamefromPtr(m_interface[index]->m_measuredCPRBsPtr[i]));
             }
         }
 
@@ -192,7 +243,7 @@ int afCRTKSimulatorPlugin::readConfigFile(string config_filepath){
         if (InitInterface(node, interface, ifname) == -1)
             return -1;
     }
-    return 1;
+    return 1;         
 }
 
 int afCRTKSimulatorPlugin::InitInterface(YAML::Node& node, Interface* interface, string ifname){
@@ -209,16 +260,13 @@ int afCRTKSimulatorPlugin::InitInterface(YAML::Node& node, Interface* interface,
                     return -1;
                 }
                 interface->m_measuredCPRBsPtr.push_back(rigidBodyPtr);
-
                 rigidName = getNamefromPtr(rigidBodyPtr);
                 
 
                 if(node[ifname]["measured_cp"]["namespace"] && node[ifname]["measured_cp"]["rigidbody"].size() == node[ifname]["measured_cp"]["namespace"].size())
                     interface->crtkInterface->add_measured_cp(node[ifname]["measured_cp"]["namespace"][j].as<string>() + '/' + rigidName);
-                else{
-                    rigidName = regex_replace(rigidName, regex{" "}, string{"_"});
+                else
                     interface->crtkInterface->add_measured_cp(rigidName);           
-                }
             }
         }
 
@@ -254,9 +302,7 @@ int afCRTKSimulatorPlugin::InitInterface(YAML::Node& node, Interface* interface,
                     return -1;
                 }
                 interface->m_measuredCFRBsPtr.push_back(rigidBodyPtr);
-
                 rigidName = getNamefromPtr(rigidBodyPtr);
-
 
                 if(node[ifname]["measured_cf"]["namespace"] && node[ifname]["measured_cf"]["rigidbody"].size() == node[ifname]["measured_cf"]["namespace"].size())
                     interface->crtkInterface->add_measured_cf(node[ifname]["measured_cf"]["namespace"][j].as<string>()+ '/' + rigidName);
@@ -288,10 +334,8 @@ int afCRTKSimulatorPlugin::InitInterface(YAML::Node& node, Interface* interface,
 
                 if(node[ifname]["servo_cp"]["namespace"]&& node[ifname]["servo_cp"]["rigidbody"].size() == node[ifname]["servo_cp"]["namespace"].size())
                     interface->crtkInterface->add_servo_cp(node[ifname]["servo_cp"]["rigidbody"][j]["namespace"].as<string>() + '/' = rigidName);
-                else{
-                    rigidName = regex_replace(rigidName, regex{" "}, string{"_"});
+                else
                     interface->crtkInterface->add_servo_cp(rigidName);
-                }
             }
 
         }
@@ -330,13 +374,10 @@ int afCRTKSimulatorPlugin::InitInterface(YAML::Node& node, Interface* interface,
                 interface->m_servoCFRBsPtr.push_back(rigidBodyPtr);
                 
                 rigidName = getNamefromPtr(rigidBodyPtr);
-
                 if(node[ifname]["servo_cf"]["namespace"])
                     interface->crtkInterface->add_servo_cf(node[ifname]["servo_cf"]["namespace"].as<string>() + '/' + rigidName);
-                else{
-                    rigidName = regex_replace(rigidName, regex{" "}, string{"_"});
+                else
                     interface->crtkInterface->add_servo_cf(rigidName);
-                }
             }
         }
 
@@ -360,7 +401,8 @@ string getNamefromPtr(afRigidBodyPtr &rigidBodyPtr){
     vector<string> v;
     boost::split(v, rigidName, boost::is_any_of(" ")); 
     rigidName.erase(0,v[0].length()+1); //Remove BODY
-    // rigidName = ns + "/" + rigidName << endl;
+    rigidName = ns + "/" + rigidName;
+    rigidName = regex_replace(rigidName, regex{" "}, string{"_"});
     return rigidName;
 }
 
