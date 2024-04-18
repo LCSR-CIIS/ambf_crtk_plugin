@@ -100,12 +100,12 @@ int afCRTKSimulatorPlugin::init(int argc, char** argv, const afWorldPtr a_afWorl
             afChildrenMap::iterator cIt;
             afChildrenMap* childrenMap = it->second->getChildrenMap();
 
-            for(cIt = childrenMap->begin(); cIt != childrenMap->end(); ++cIt)
-            {   
+            for(cIt = childrenMap->begin(); cIt != childrenMap->end(); ++cIt){   
+                vector<string> jointNames;
                 for (auto it_child=cIt->second.begin(); it_child != cIt->second.end(); ++it_child){
                     string wholeName = it_child->first;
                     
-                    string objectType, objectName;
+                    string objectName;
                     string ns;
                     vector<string> v;
                     boost::split(v, wholeName, boost::is_any_of("/")); 
@@ -122,12 +122,12 @@ int afCRTKSimulatorPlugin::init(int argc, char** argv, const afWorldPtr a_afWorl
                         return -1;
 
                     Interface* interface;
-                    if (m_namespaces.find(ns) == m_namespaces.end()) {
+                    if (m_namespaces.find(ns) == m_namespaces.end()){
                         // not found
                         interface = new Interface(ns);
                         m_namespaces[ns] = interface;
                     } 
-                    else {
+                    else{
                         // found
                         interface = m_namespaces[ns];
                     }
@@ -144,6 +144,14 @@ int afCRTKSimulatorPlugin::init(int argc, char** argv, const afWorldPtr a_afWorl
                         interface->m_servoCPRBsPtr.push_back(rigidBodyPtr); 
                         interface->m_servoCFRBsPtr.push_back(rigidBodyPtr); 
                         m_interface.push_back(interface);
+                    }
+
+                    if (it_child->second->getType() == afType::RIGID_BODY){
+                        afJointPtr jointPtr = m_worldPtr->getJoint(wholeName);
+                        objectName = regex_replace(objectName, regex{" "}, string{"_"});
+                        interface->m_measuredJointsPtr.push_back(jointPtr);
+                        interface->m_servoJointsPtr.push_back(jointPtr);
+                        jointNames.push_back(objectName);
                     }
                 }
             }
@@ -168,7 +176,7 @@ void afCRTKSimulatorPlugin::physicsUpdate(double dt){
         if (m_interface[index]->m_measuredCPRBsPtr.size() > 0){
             for (size_t i = 0; i < m_interface[index]->m_measuredCPRBsPtr.size(); i++){
                 cTransform measured_cp = m_interface[index]->m_measuredCPRBsPtr[i]->getLocalTransform();
-                m_interface[index]->crtkInterface->measured_cp(measured_cp, getNamefromPtr(m_interface[index]->m_measuredCPRBsPtr[i]));
+                m_interface[index]->crtkInterface->measured_cp(measured_cp, getNamefromPtr((afBaseObjectPtr)m_interface[index]->m_measuredCPRBsPtr[i]));
             }
         }
 
@@ -267,7 +275,7 @@ int afCRTKSimulatorPlugin::InitInterface(YAML::Node& node, Interface* interface,
                     return -1;
                 }
                 interface->m_measuredCPRBsPtr.push_back(rigidBodyPtr);
-                rigidName = getNamefromPtr(rigidBodyPtr);
+                rigidName = getNamefromPtr((afBaseObjectPtr)rigidBodyPtr);
                 
 
                 if(node[ifname]["measured_cp"]["namespace"] && node[ifname]["measured_cp"]["rigidbody"].size() == node[ifname]["measured_cp"]["namespace"].size())
@@ -309,7 +317,7 @@ int afCRTKSimulatorPlugin::InitInterface(YAML::Node& node, Interface* interface,
                     return -1;
                 }
                 interface->m_measuredCFRBsPtr.push_back(rigidBodyPtr);
-                rigidName = getNamefromPtr(rigidBodyPtr);
+                rigidName = getNamefromPtr((afBaseObjectPtr)rigidBodyPtr);
 
                 if(node[ifname]["measured_cf"]["namespace"] && node[ifname]["measured_cf"]["rigidbody"].size() == node[ifname]["measured_cf"]["namespace"].size())
                     interface->crtkInterface->add_measured_cf(node[ifname]["measured_cf"]["namespace"][j].as<string>()+ '/' + rigidName);
@@ -337,7 +345,7 @@ int afCRTKSimulatorPlugin::InitInterface(YAML::Node& node, Interface* interface,
 
                 interface->m_servoCPRBsPtr.push_back(rigidBodyPtr);
             
-                rigidName = getNamefromPtr(rigidBodyPtr);
+                rigidName = getNamefromPtr((afBaseObjectPtr)rigidBodyPtr);
 
                 if(node[ifname]["servo_cp"]["namespace"]&& node[ifname]["servo_cp"]["rigidbody"].size() == node[ifname]["servo_cp"]["namespace"].size())
                     interface->crtkInterface->add_servo_cp(node[ifname]["servo_cp"]["rigidbody"][j]["namespace"].as<string>() + '/' = rigidName);
@@ -380,7 +388,7 @@ int afCRTKSimulatorPlugin::InitInterface(YAML::Node& node, Interface* interface,
                 }
                 interface->m_servoCFRBsPtr.push_back(rigidBodyPtr);
                 
-                rigidName = getNamefromPtr(rigidBodyPtr);
+                rigidName = getNamefromPtr((afbaseObjectPtr)rigidBodyPtr);
                 if(node[ifname]["servo_cf"]["namespace"])
                     interface->crtkInterface->add_servo_cf(node[ifname]["servo_cf"]["namespace"].as<string>() + '/' + rigidName);
                 else
@@ -399,19 +407,19 @@ int afCRTKSimulatorPlugin::InitInterface(YAML::Node& node, Interface* interface,
 
 }
 
-string getNamefromPtr(afRigidBodyPtr &rigidBodyPtr){
+string getNamefromPtr(afBaseObjectPtr &baseBodyPtr){
     // Get Namespace
-    string ns = rigidBodyPtr->getAttributes()->m_identificationAttribs.m_namespace;
+    string ns = baseBodyPtr->getAttributes()->m_identificationAttribs.m_namespace;
     // cerr << ns.erase(0,9) << endl; // Erase "/ambf/env"
     ns = ns.erase(0,10);
     
-    string rigidName = rigidBodyPtr->getAttributes()->m_identifier; // BODY name_of_rigidBody
+    string baseName = baseBodyPtr->getAttributes()->m_identifier; // BODY name_of_rigidBody
     vector<string> v;
-    boost::split(v, rigidName, boost::is_any_of(" ")); 
-    rigidName.erase(0,v[0].length()+1); //Remove BODY
-    rigidName = rigidName; //ns + rigidName
-    rigidName = regex_replace(rigidName, regex{" "}, string{"_"});
-    return rigidName;
+    boost::split(v, baseName, boost::is_any_of(" ")); 
+    baseName.erase(0,v[0].length()+1); //Remove BODY
+    baseName = baseName; //ns + rigidName
+    baseName = regex_replace(baseName, regex{" "}, string{"_"});
+    return baseName;
 }
 
 void afCRTKSimulatorPlugin::reset(){
