@@ -109,39 +109,46 @@ int afCRTKSimulatorPlugin::init(int argc, char** argv, const afWorldPtr a_afWorl
                     string ns;
                     vector<string> v;
                     boost::split(v, wholeName, boost::is_any_of("/")); 
-                    if (v.size() ==3){
-                        objectType = v[3].substr(0, wholeName.find(" "));
-                        objectName = v[3].substr(wholeName.find(" ")+1);
+
+                    if (v.size() ==4){
+                        objectName = v[3].substr(v[3].find(" ")+1);
                         ns = "CRTK";
                     }
-                    else if (v.size() > 3){
-                        objectType = wholeName.substr(0, wholeName.find(" "));
-                        objectType = objectType.substr(objectType.find_last_of("/")+1);
+                    else if (v.size() > 4){
                         objectName = wholeName.substr(wholeName.find(" ")+1);
-
-                        ns = v[3];
+                        ns = "CRTK/" + v[3];
                     }
                     else
                         return -1;
-                    cerr << wholeName << endl;
-                    cerr << objectType << endl;
-                    cerr << ns << endl;
-                    cerr << objectName << endl;
-                    cerr << int(it_child->second->getType()) << endl;
 
-                    Interface* interface = new Interface(ns);
-
-                    if (it_child->second->getType() == afType::RIGID_BODY){
-                        afRigidBodyPtr rigidBodyPtr = m_worldPtr->getRigidBody(objectName);
-                        interface->crtkInterface->add_measured_cp(objectName);           
-
+                    Interface* interface;
+                    if (m_namespaces.find(ns) == m_namespaces.end()) {
+                        // not found
+                        interface = new Interface(ns);
+                        m_namespaces[ns] = interface;
+                    } 
+                    else {
+                        // found
+                        interface = m_namespaces[ns];
                     }
 
-                    m_interface.push_back(interface);
-
+                    if (it_child->second->getType() == afType::RIGID_BODY){
+                        afRigidBodyPtr rigidBodyPtr = m_worldPtr->getRigidBody(wholeName);
+                        objectName = regex_replace(objectName, regex{" "}, string{"_"});
+                        interface->crtkInterface->add_measured_cp(objectName);
+                        interface->crtkInterface->add_measured_cf(objectName);
+                        interface->crtkInterface->add_servo_cp(objectName);
+                        interface->crtkInterface->add_servo_cf(objectName);
+                        interface->m_measuredCPRBsPtr.push_back(rigidBodyPtr); 
+                        interface->m_measuredCFRBsPtr.push_back(rigidBodyPtr); 
+                        interface->m_servoCPRBsPtr.push_back(rigidBodyPtr); 
+                        interface->m_servoCFRBsPtr.push_back(rigidBodyPtr); 
+                        m_interface.push_back(interface);
+                    }
                 }
             }
         }
+        cerr << "Initialization Finished!!" << endl;
         return 1;
     }
 }
@@ -396,12 +403,13 @@ string getNamefromPtr(afRigidBodyPtr &rigidBodyPtr){
     // Get Namespace
     string ns = rigidBodyPtr->getAttributes()->m_identificationAttribs.m_namespace;
     // cerr << ns.erase(0,9) << endl; // Erase "/ambf/env"
+    ns = ns.erase(0,10);
     
     string rigidName = rigidBodyPtr->getAttributes()->m_identifier; // BODY name_of_rigidBody
     vector<string> v;
     boost::split(v, rigidName, boost::is_any_of(" ")); 
     rigidName.erase(0,v[0].length()+1); //Remove BODY
-    rigidName = ns + "/" + rigidName;
+    rigidName = rigidName; //ns + rigidName
     rigidName = regex_replace(rigidName, regex{" "}, string{"_"});
     return rigidName;
 }

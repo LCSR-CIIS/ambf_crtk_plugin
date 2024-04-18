@@ -104,6 +104,7 @@ class afCRTKSimulatorPlugin: public afSimulatorPlugin{
 
         int m_num;
         vector<Interface*> m_interface;
+        map<string, Interface*> m_namespaces;
         
 };
 
