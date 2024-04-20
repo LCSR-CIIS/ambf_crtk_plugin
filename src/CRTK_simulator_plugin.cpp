@@ -99,9 +99,7 @@ int afCRTKSimulatorPlugin::init(int argc, char** argv, const afWorldPtr a_afWorl
             //ChildrenMap: map<map<afType, map<string, afBaseObject*> >
             afChildrenMap::iterator cIt;
             afChildrenMap* childrenMap = it->second->getChildrenMap();
-
-            for(cIt = childrenMap->begin(); cIt != childrenMap->end(); ++cIt){   
-                vector<string> jointNames;
+                        for(cIt = childrenMap->begin(); cIt != childrenMap->end(); ++cIt){   
                 for (auto it_child=cIt->second.begin(); it_child != cIt->second.end(); ++it_child){
                     string wholeName = it_child->first;
                     
@@ -126,6 +124,7 @@ int afCRTKSimulatorPlugin::init(int argc, char** argv, const afWorldPtr a_afWorl
                         // not found
                         interface = new Interface(ns);
                         m_namespaces[ns] = interface;
+                        m_interface.push_back(interface);
                     } 
                     else{
                         // found
@@ -143,20 +142,29 @@ int afCRTKSimulatorPlugin::init(int argc, char** argv, const afWorldPtr a_afWorl
                         interface->m_measuredCFRBsPtr.push_back(rigidBodyPtr); 
                         interface->m_servoCPRBsPtr.push_back(rigidBodyPtr); 
                         interface->m_servoCFRBsPtr.push_back(rigidBodyPtr); 
-                        m_interface.push_back(interface);
                     }
 
-                    if (it_child->second->getType() == afType::RIGID_BODY){
+                    if (it_child->second->getType() == afType::JOINT){
                         afJointPtr jointPtr = m_worldPtr->getJoint(wholeName);
                         objectName = regex_replace(objectName, regex{" "}, string{"_"});
                         interface->m_measuredJointsPtr.push_back(jointPtr);
                         interface->m_servoJointsPtr.push_back(jointPtr);
-                        jointNames.push_back(objectName);
                     }
                 }
             }
         }
-        cerr << "Initialization Finished!!" << endl;
+        vector<string> jointNames;
+        for (size_t i = 0; i < m_interface.size(); i ++){
+            if(m_interface[i]->m_measuredJointsPtr.size() > 0){
+                for (size_t j = 0; j < m_interface[i]->m_measuredJointsPtr.size(); j++){
+                    jointNames.push_back(getNamefromPtr((afBaseObjectPtr)m_interface[i]->m_measuredJointsPtr[j]));
+                }
+                m_interface[i]->crtkInterface->add_measured_js("", jointNames);
+                m_interface[i]->crtkInterface->add_servo_jp("");
+            }
+            jointNames.clear();
+        }
+        cerr << "INFO! Initialization Successfully Finished!!" << endl;
         return 1;
     }
 }
@@ -388,7 +396,7 @@ int afCRTKSimulatorPlugin::InitInterface(YAML::Node& node, Interface* interface,
                 }
                 interface->m_servoCFRBsPtr.push_back(rigidBodyPtr);
                 
-                rigidName = getNamefromPtr((afbaseObjectPtr)rigidBodyPtr);
+                rigidName = getNamefromPtr((afBaseObjectPtr)rigidBodyPtr);
                 if(node[ifname]["servo_cf"]["namespace"])
                     interface->crtkInterface->add_servo_cf(node[ifname]["servo_cf"]["namespace"].as<string>() + '/' + rigidName);
                 else
@@ -407,7 +415,7 @@ int afCRTKSimulatorPlugin::InitInterface(YAML::Node& node, Interface* interface,
 
 }
 
-string getNamefromPtr(afBaseObjectPtr &baseBodyPtr){
+string getNamefromPtr(afBaseObjectPtr baseBodyPtr){
     // Get Namespace
     string ns = baseBodyPtr->getAttributes()->m_identificationAttribs.m_namespace;
     // cerr << ns.erase(0,9) << endl; // Erase "/ambf/env"

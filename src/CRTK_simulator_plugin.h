@@ -63,7 +63,7 @@ namespace p_opt = boost::program_options;
 using namespace std;
 using namespace ambf;
 
-string getNamefromPtr(afBaseObjectPtr &baseBodyPtr);
+string getNamefromPtr(afBaseObjectPtr baseBodyPtr);
 
 
 class Interface{
