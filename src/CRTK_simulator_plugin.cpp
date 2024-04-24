@@ -113,12 +113,19 @@ int afCRTKSimulatorPlugin::init(int argc, char** argv, const afWorldPtr a_afWorl
                         ns = "CRTK";
                     }
                     else if (v.size() > 4){
-                        objectName = wholeName.substr(wholeName.find(" ")+1);
+                        vector<string> v1;
+                        boost::split(v1, wholeName, boost::is_any_of(" ")); 
+                        if (v1.size() > 1){
+                            objectName = wholeName.substr(wholeName.find(" ")+1);
+                        }
+                        else{
+                            objectName = v[4];
+                        }
                         ns = "CRTK/" + v[3];
                     }
                     else
                         return -1;
-
+                    
                     Interface* interface;
                     if (m_namespaces.find(ns) == m_namespaces.end()){
                         // not found
@@ -149,6 +156,24 @@ int afCRTKSimulatorPlugin::init(int argc, char** argv, const afWorldPtr a_afWorl
                         objectName = regex_replace(objectName, regex{" "}, string{"_"});
                         interface->m_measuredJointsPtr.push_back(jointPtr);
                         interface->m_servoJointsPtr.push_back(jointPtr);
+                    }
+
+                    if (it_child->second->getType() == afType::LIGHT){
+                        afBaseObjectPtr objectPtr = m_worldPtr->getLight(wholeName);
+                        objectName = regex_replace(objectName, regex{" "}, string{"_"});
+                        interface->m_measuredObjectPtr.push_back(objectPtr);
+                        interface->m_servoObjectPtr.push_back(objectPtr);
+                        interface->crtkInterface->add_measured_cp(objectName);
+                        interface->crtkInterface->add_servo_cp(objectName);
+                    }
+
+                    if (it_child->second->getType() == afType::CAMERA){
+                        afBaseObjectPtr objectPtr = m_worldPtr->getCamera(wholeName);
+                        objectName = regex_replace(objectName, regex{" "}, string{"_"});
+                        interface->m_measuredObjectPtr.push_back(objectPtr);
+                        interface->m_servoObjectPtr.push_back(objectPtr);
+                        interface->crtkInterface->add_measured_cp(objectName);
+                        interface->crtkInterface->add_servo_cp(objectName);
                     }
                 }
             }
@@ -185,6 +210,14 @@ void afCRTKSimulatorPlugin::physicsUpdate(double dt){
             for (size_t i = 0; i < m_interface[index]->m_measuredCPRBsPtr.size(); i++){
                 cTransform measured_cp = m_interface[index]->m_measuredCPRBsPtr[i]->getLocalTransform();
                 m_interface[index]->crtkInterface->measured_cp(measured_cp, getNamefromPtr((afBaseObjectPtr)m_interface[index]->m_measuredCPRBsPtr[i]));
+            }
+        }
+
+        // measured_cp
+        if (m_interface[index]->m_measuredObjectPtr.size() > 0){
+            for (size_t i = 0; i < m_interface[index]->m_measuredObjectPtr.size(); i++){
+                cTransform measured_cp = m_interface[index]->m_measuredObjectPtr[i]->getLocalTransform();
+                m_interface[index]->crtkInterface->measured_cp(measured_cp, getNamefromPtr((afBaseObjectPtr)m_interface[index]->m_measuredObjectPtr[i]));
             }
         }
 
@@ -227,6 +260,16 @@ void afCRTKSimulatorPlugin::physicsUpdate(double dt){
                     Tcommand = trans;
                     m_interface[index]->m_servoCPRBsPtr[i]->m_bulletRigidBody->getMotionState()->setWorldTransform(Tcommand);
                     m_interface[index]->m_servoCPRBsPtr[i]->m_bulletRigidBody->setWorldTransform(Tcommand);
+                }   
+            }
+        }
+
+        // servo_cp
+        if (m_interface[index]->m_servoObjectPtr.size() > 0){
+            cTransform servo_cp;
+            for (size_t i = 0; i < m_interface[index]->m_servoObjectPtr.size(); i++){
+                if(m_interface[index]->crtkInterface->servo_cp(servo_cp)){
+                    m_interface[index]->m_servoObjectPtr[i]->setLocalTransform(servo_cp);
                 }   
             }
         }
@@ -424,8 +467,11 @@ string getNamefromPtr(afBaseObjectPtr baseBodyPtr){
     string baseName = baseBodyPtr->getAttributes()->m_identifier; // BODY name_of_rigidBody
     vector<string> v;
     boost::split(v, baseName, boost::is_any_of(" ")); 
-    baseName.erase(0,v[0].length()+1); //Remove BODY
-    baseName = baseName; //ns + rigidName
+
+    if (v.size() > 1){
+        baseName.erase(0,v[0].length()+1); //Remove BODY
+        baseName = baseName;//ns + baseName;
+    }
     baseName = regex_replace(baseName, regex{" "}, string{"_"});
     return baseName;
 }

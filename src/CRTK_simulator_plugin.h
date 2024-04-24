@@ -79,6 +79,9 @@ class Interface{
         vector<afJointPtr> m_measuredJointsPtr, m_servoJointsPtr;
         // RigidBody Pointers
         vector<afRigidBodyPtr> m_measuredCPRBsPtr, m_measuredCFRBsPtr, m_servoCPRBsPtr, m_servoCFRBsPtr; 
+        // Non RigidBody Pointers
+        vector<afBaseObjectPtr> m_measuredObjectPtr, m_servoObjectPtr;
+
 };
 
 class afCRTKSimulatorPlugin: public afSimulatorPlugin{
