@@ -1,0 +1,152 @@
+//==============================================================================
+/*
+    Software License Agreement (BSD License)
+    Copyright (c) 2019-2024
+
+    All rights reserved.
+
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions
+    are met:
+
+    * Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+
+    * Redistributions in binary form must reproduce the above
+    copyright notice, this list of conditions and the following
+    disclaimer in the documentation and/or other materials provided
+    with the distribution.
+
+    * Neither the name of authors nor the names of its contributors may
+    be used to endorse or promote products derived from this software
+    without specific prior written permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+    "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+    LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+    FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+    COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+    INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+    BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+    CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+    LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
+    ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+    POSSIBILITY OF SUCH DAMAGE.
+
+    \author    <hishida3@jhu.edu>
+    \author    Hisashi Ishida
+    \date      03.21.2024
+    
+*/
+//==============================================================================
+
+#include "CRTK_object_plugin.h"
+
+Interface::Interface(string ifname){
+    m_name = ifname;
+    crtkInterface = new afCRTKInterface(ifname);
+}
+
+afCRTKObjectPlugin::afCRTKObjectPlugin(){
+    cout << "/*********************************************" << endl;
+    cout << "/* AMBF Object Plugin for CRTK Interface" << endl;
+    cout << "/*********************************************" << endl;
+}
+
+int afCRTKObjectPlugin::init(const afBaseObjectPtr a_afObjectPtr, const afBaseObjectAttribsPtr a_objectAttribs){
+
+    // Store Pointer for the world
+    m_objectPtr = a_afObjectPtr;
+
+    string ns = a_objectAttribs->m_identificationAttribs.m_namespace;
+    // cerr << ns.erase(0,9) << endl; // Erase "/ambf/env"
+    ns = ns.erase(0,10);
+    
+    string objectName = a_objectAttribs->m_identifier; // BODY name_of_rigidBody
+    vector<string> v;
+    boost::split(v, objectName, boost::is_any_of(" ")); 
+    objectName.erase(0,v[0].length()+1); //Remove BODY
+    objectName = objectName; //ns + rigidName
+    objectName = regex_replace(objectName, regex{" "}, string{"_"});
+
+    m_interface = new Interface(ns);
+
+    if (a_objectAttribs->m_identificationAttribs.m_objectType == afType::RIGID_BODY){
+        objectName = regex_replace(objectName, regex{" "}, string{"_"});
+        m_interface->crtkInterface->add_measured_cp(objectName);
+        m_interface->crtkInterface->add_servo_cp(objectName);
+        m_interface->m_measuredObjectPtr.push_back(m_objectPtr); 
+        m_interface->m_servoObjectPtr.push_back(m_objectPtr); 
+    }
+
+
+    if (a_objectAttribs->m_identificationAttribs.m_objectType == afType::LIGHT){
+        objectName = regex_replace(objectName, regex{" "}, string{"_"});
+        m_interface->m_measuredObjectPtr.push_back(m_objectPtr);
+        m_interface->m_servoObjectPtr.push_back(m_objectPtr);
+        m_interface->crtkInterface->add_measured_cp(objectName);
+        m_interface->crtkInterface->add_servo_cp(objectName);
+    }
+
+    if (a_objectAttribs->m_identificationAttribs.m_objectType == afType::CAMERA){
+        objectName = regex_replace(objectName, regex{" "}, string{"_"});
+        m_interface->m_measuredObjectPtr.push_back(m_objectPtr);
+        m_interface->m_servoObjectPtr.push_back(m_objectPtr);
+        m_interface->crtkInterface->add_measured_cp(objectName);
+        m_interface->crtkInterface->add_servo_cp(objectName);
+    }
+      
+    cerr << "INFO! Initialization Successfully Finished!!" << endl;
+    return 1;
+}
+
+void afCRTKObjectPlugin::graphicsUpdate(){
+
+}
+
+void afCRTKObjectPlugin::physicsUpdate(double dt){
+    // measured_cp
+    if (m_interface->m_measuredObjectPtr.size() > 0){
+        for (size_t i = 0; i < m_interface->m_measuredObjectPtr.size(); i++){
+            cTransform measured_cp = m_interface->m_measuredObjectPtr[i]->getLocalTransform();
+            m_interface->crtkInterface->measured_cp(measured_cp, getNamefromPtr((afBaseObjectPtr)m_interface->m_measuredObjectPtr[i]));
+        }
+    }
+
+     // servo_cp
+    if (m_interface->m_servoObjectPtr.size() > 0){
+        cTransform servo_cp;
+        for (size_t i = 0; i < m_interface->m_servoObjectPtr.size(); i++){
+            if(m_interface->crtkInterface->servo_cp(servo_cp)){
+                m_interface->m_servoObjectPtr[i]->setLocalTransform(servo_cp);
+            }   
+        }
+    }
+}
+
+string getNamefromPtr(afBaseObjectPtr baseBodyPtr){
+    // Get Namespace
+    string ns = baseBodyPtr->getAttributes()->m_identificationAttribs.m_namespace;
+    // cerr << ns.erase(0,9) << endl; // Erase "/ambf/env"
+    ns = ns.erase(0,10);
+    
+    string baseName = baseBodyPtr->getAttributes()->m_identifier; // BODY name_of_rigidBody
+    vector<string> v;
+    boost::split(v, baseName, boost::is_any_of(" ")); 
+
+    if (v.size() > 1){
+        baseName.erase(0,v[0].length()+1); //Remove BODY
+        baseName = baseName;//ns + baseName;
+    }
+    baseName = regex_replace(baseName, regex{" "}, string{"_"});
+    return baseName;
+}
+
+void afCRTKObjectPlugin::reset(){
+
+}
+
+bool afCRTKObjectPlugin::close(){
+    return true;
+}

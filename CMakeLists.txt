@@ -63,25 +63,25 @@ set_property(TARGET ambf_crtk_simulator_plugin PROPERTY POSITION_INDEPENDENT_COD
 
 
 # Model Plugins
-# add_library(ambf_crtk_model_plugin SHARED
-#     src/CRTK_model_plugin.cpp
-#     src/CRTK_model_plugin.h
-#     src/afCRTKInterface.cpp
-#     src/afCRTKInterface.h
-#     )
-# target_link_libraries (ambf_crtk_model_plugin ${Boost_LIBRARIES} ${AMBF_LIBRARIES})
-# set_property(TARGET ambf_crtk_model_plugin PROPERTY POSITION_INDEPENDENT_CODE TRUE)
+add_library(ambf_crtk_model_plugin SHARED
+    src/CRTK_model_plugin.cpp
+    src/CRTK_model_plugin.h
+    src/afCRTKInterface.cpp
+    src/afCRTKInterface.h
+    )
+target_link_libraries (ambf_crtk_model_plugin ${Boost_LIBRARIES} ${AMBF_LIBRARIES})
+set_property(TARGET ambf_crtk_model_plugin PROPERTY POSITION_INDEPENDENT_CODE TRUE)
 
+# Object Plugins
+add_library(ambf_crtk_object_plugin SHARED
+    src/CRTK_object_plugin.cpp
+    src/CRTK_object_plugin.h
+    src/afCRTKInterface.cpp
+    src/afCRTKInterface.h
+    )
 
-# add_library(ambf_crtk_object_plugin SHARED
-#     src/CRTK_object_plugin.cpp
-#     src/CRTK_object_plugin.h
-#     src/afCRTKInterface.cpp
-#     src/afCRTKInterface.h
-#     )
-
-# target_link_libraries (ambf_crtk_object_plugin ${Boost_LIBRARIES} ${AMBF_LIBRARIES})
-# set_property(TARGET ambf_crtk_object_plugin PROPERTY POSITION_INDEPENDENT_CODE TRUE)
+target_link_libraries (ambf_crtk_object_plugin ${Boost_LIBRARIES} ${AMBF_LIBRARIES})
+set_property(TARGET ambf_crtk_object_plugin PROPERTY POSITION_INDEPENDENT_CODE TRUE)
 
 if(NOT BUILD_PLUGIN_WITH_ROS)
     set(BUILD_PLUGIN_WITH_ROS TRUE)
