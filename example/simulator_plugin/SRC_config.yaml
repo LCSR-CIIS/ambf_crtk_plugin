@@ -12,7 +12,7 @@ SRC/needle:
   measured_cp:
     # Name of Rigidbody in AMBF 
     rigidbody: 
-    - Needle
+    - BODY Needle
 
 SRC/psm1:
   measured_cp:

@@ -138,7 +138,7 @@ void afCRTKInterface::add_servo_cf(string a_namespace){
         baseName = m_nameSpace + "/" + a_namespace;
     }
     m_servoCFSub = m_rosNode->subscribe(baseName + "/servo_cf", 1 , &afCRTKInterface::servo_CFCallback, this);
-    m_servoCFSubMap[a_namespace] = m_rosNode->subscribe(baseName + "/servo_cp", 1, &afCRTKInterface::servo_CPCallback, this);
+    m_servoCFSubMap[a_namespace] = m_rosNode->subscribe(baseName + "/servo_cf", 1, &afCRTKInterface::servo_CFCallback, this);
 }
 
         
