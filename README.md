@@ -20,17 +20,53 @@ make
 A simple package.xml has been included in this repository to enable catkin to find and build it **<plugin_path>** should be located within `catkin_ws/src/`.
 ```bash
 cd <catkin_ws>
-catkin build ambf_spacenav_plugin
+catkin build ambf_crtk_plugin
 ```
 
 ## 2. How to use your plugin
 You can test this plugin on the example by:
 `<ambf_exe_dir> ---> e.g. ~/ambf/bin/lin-x86_64`
 
+### 2.1 Simulator plugin
 You are required to specify configuration file such as `example/CRTK_config.yaml`:
 ```bash
 cd <ambf_exe_dir>
-./ambf_simulator --plugins <plugin_path>/build/libambf_crtk_plugin.so --conf <plugin_path>/example/CRTK_config.yaml
+./ambf_simulator --plugins <plugin_path>/build/libambf_crtk_simulator_plugin.so --conf <plugin_path>/example/CRTK_config.yaml
+```
+You can also define plugin in your `launch.yaml`: 
+
+```bash
+plugins: [
+  {
+    name: CRTK,
+    filename: libambf_crtk_simulator_plugin.so,
+    path: <plugin_path>/ambf_crtk_simulator_plugin/build
+  }
+]
+```
+
+### 2.2 Model plguin
+You can specify plugin in your ADF file as follows:
+```bash
+plugins: [
+  {
+    name: CRTK,
+    filename: libambf_crtk_model_plugin.so,
+    path: <plugin_path>/ambf_crtk_model_plugin/build
+  }
+]
+```
+
+### 2.3 Object plugin
+You can specify plugin in your ADF file as follows:
+```bash
+plugins: [
+  {
+    name: CRTK,
+    filename: libambf_crtk_object_plugin.so,
+    path: <plugin_path>/ambf_crtk_object_plugin/build
+  }
+]
 ```
 
 ## 3. Configuration file
@@ -104,10 +140,16 @@ In this example, there will be the following rostopics:
 /Atracsys/servo_cp
 ```
 
-## Example command
-```
-ambf_simulator -a ../3D-Slicer_ROS_Module_with_AMBF/AMBF_Plugin_3DSlicer/ADF/galen.yaml --plugins ./build/libambf_crtk_plugin.so --conf example/CRTK_config.yaml 
+## Example command 
+Please refer to [Surgical Robotics Challenge](https://github.com/surgical-robotics-ai/surgical_robotics_challenge) and use the following command to use it for SRC:
 
+```bash
+ambf_simulator --launch_file ../surgical_robotics_challenge/launch.yaml -l 0,1,2,3,4,5 --plugins ./build/libambf_crtk_simulator_plugin.so --conf example/SRC_config.yaml 
+```
+
+You can use the following example:
+```bash
+ambf_simulator -a ../3D-Slicer_ROS_Module_with_AMBF/AMBF_Plugin_3DSlicer/ADF/galen.yaml --plugins ./build/libambf_crtk_simulator_plugin.so --conf example/CRTK_config.yaml 
 ```
 
 ## Trouble Shooting
