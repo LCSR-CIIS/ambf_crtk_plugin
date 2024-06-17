@@ -43,6 +43,11 @@
 
 #include "CRTK_model_plugin.h"
 
+Interface::Interface(string ifname){
+    m_name = ifname;
+    crtkInterface = new afCRTKInterface(ifname);
+}
+
 afCRTKModelPlugin::afCRTKModelPlugin(){
     cout << "/*********************************************" << endl;
     cout << "/* AMBF Model Plugin for CRTK Interface" << endl;
