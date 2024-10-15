@@ -67,7 +67,9 @@ class afCRTKObjectPlugin: public afObjectPlugin, public afCRTKBasePlugin{
 
     protected:
     // private:
+        int loadCRTKInterfacefromObject();
         afBaseObjectPtr m_objectPtr;
+        afBaseObjectAttribsPtr m_objectAttribs;
         // Pointer to the world
         afWorldPtr m_worldPtr;
 

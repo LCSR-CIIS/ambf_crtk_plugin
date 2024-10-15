@@ -65,6 +65,7 @@ class afCRTKModelPlugin: public afModelPlugin, public afCRTKBasePlugin{
         virtual bool close() override;
 
     protected:
+        int loadCRTKInterfacefromModel();
     // private:
         // Pointer to the world
         afModelPtr m_modelPtr;

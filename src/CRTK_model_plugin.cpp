@@ -59,7 +59,30 @@ int afCRTKModelPlugin::init(const afModelPtr a_modelPtr, afModelAttribsPtr a_att
     m_worldPtr->m_bulletWorld->getSolverInfo().m_erp = 1.0;  
     m_worldPtr->m_bulletWorld->getSolverInfo().m_erp2 = 1.0; 
     
-    //ChildrenMap: map<map<afType, map<string, afBaseObject*> > > 
+    // If there is no configuration file given
+    int result = loadCRTKInterfacefromModel();
+    cerr << "INFO! Initialization Successfully Finished!!" << endl;
+    return 1;
+}
+
+
+void afCRTKModelPlugin::graphicsUpdate(){
+}
+
+
+void afCRTKModelPlugin::physicsUpdate(double dt){
+    for (Interface* interface:m_interface){
+        runMeasuredCP(interface);
+        runMeasuredJS(interface);
+        runMeasuredCF(interface);
+        runServoCP(interface);
+        runServoJP(interface);
+        runServoCF(interface);
+    }
+}
+
+int afCRTKModelPlugin::loadCRTKInterfacefromModel(){
+        //ChildrenMap: map<map<afType, map<string, afBaseObject*> > > 
     afChildrenMap::iterator cIt;
     afChildrenMap* childrenMap = m_modelPtr->getChildrenMap();
     for(cIt = childrenMap->begin(); cIt != childrenMap->end(); ++cIt){   
@@ -151,26 +174,7 @@ int afCRTKModelPlugin::init(const afModelPtr a_modelPtr, afModelAttribsPtr a_att
         }
         jointNames.clear();
     }
-    cerr << "INFO! Initialization Successfully Finished!!" << endl;
-    return 1;
 }
-
-
-void afCRTKModelPlugin::graphicsUpdate(){
-}
-
-
-void afCRTKModelPlugin::physicsUpdate(double dt){
-    for (Interface* interface:m_interface){
-        runMeasuredCP(interface);
-        runMeasuredJS(interface);
-        runMeasuredCF(interface);
-        runServoCP(interface);
-        runServoJP(interface);
-        runServoCF(interface);
-    }
-}
-
 
 void afCRTKModelPlugin::reset(){
 }

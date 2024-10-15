@@ -54,44 +54,9 @@ int afCRTKObjectPlugin::init(const afBaseObjectPtr a_afObjectPtr, const afBaseOb
 
     // Store Pointer for the world
     m_objectPtr = a_afObjectPtr;
-
-    string ns = a_objectAttribs->m_identificationAttribs.m_namespace;
-    // cerr << ns.erase(0,9) << endl; // Erase "/ambf/env"
-    ns = ns.erase(0,10);
+    m_objectAttribs = a_objectAttribs;
     
-    string objectName = a_objectAttribs->m_identifier; // BODY name_of_rigidBody
-    vector<string> v;
-    boost::split(v, objectName, boost::is_any_of(" ")); 
-    objectName.erase(0,v[0].length()+1); //Remove BODY
-    objectName = objectName; //ns + rigidName
-    objectName = regex_replace(objectName, regex{" "}, string{"_"});
-
-    m_interface.push_back(new Interface(ns));
-
-    if (a_objectAttribs->m_identificationAttribs.m_objectType == afType::RIGID_BODY){
-        objectName = regex_replace(objectName, regex{" "}, string{"_"});
-        m_interface[0]->crtkInterface->add_measured_cp(objectName);
-        m_interface[0]->crtkInterface->add_servo_cp(objectName);
-        m_interface[0]->m_measuredObjectPtr.push_back(m_objectPtr); 
-        m_interface[0]->m_servoObjectPtr.push_back(m_objectPtr); 
-    }
-
-    if (a_objectAttribs->m_identificationAttribs.m_objectType == afType::LIGHT){
-        objectName = regex_replace(objectName, regex{" "}, string{"_"});
-        m_interface[0]->m_measuredObjectPtr.push_back(m_objectPtr);
-        m_interface[0]->m_servoObjectPtr.push_back(m_objectPtr);
-        m_interface[0]->crtkInterface->add_measured_cp(objectName);
-        m_interface[0]->crtkInterface->add_servo_cp(objectName);
-    }
-
-    if (a_objectAttribs->m_identificationAttribs.m_objectType == afType::CAMERA){
-        objectName = regex_replace(objectName, regex{" "}, string{"_"});
-        m_interface[0]->m_measuredObjectPtr.push_back(m_objectPtr);
-        m_interface[0]->m_servoObjectPtr.push_back(m_objectPtr);
-        m_interface[0]->crtkInterface->add_measured_cp(objectName);
-        m_interface[0]->crtkInterface->add_servo_cp(objectName);
-    }
-      
+    loadCRTKInterfacefromObject();
     cerr << "INFO! Initialization Successfully Finished!!" << endl;
     return 1;
 }
@@ -119,6 +84,48 @@ void afCRTKObjectPlugin::physicsUpdate(double dt){
             }   
         }
     }
+}
+
+
+int afCRTKObjectPlugin::loadCRTKInterfacefromObject(){
+    string ns = m_objectAttribs->m_identificationAttribs.m_namespace;
+    // cerr << ns.erase(0,9) << endl; // Erase "/ambf/env"
+    ns = ns.erase(0,10);
+    
+    string objectName = m_objectAttribs->m_identifier; // BODY name_of_rigidBody
+    vector<string> v;
+    boost::split(v, objectName, boost::is_any_of(" ")); 
+    objectName.erase(0,v[0].length()+1); //Remove BODY
+    objectName = objectName; //ns + rigidName
+    objectName = regex_replace(objectName, regex{" "}, string{"_"});
+
+    m_interface.push_back(new Interface(ns));
+
+    if (m_objectAttribs->m_identificationAttribs.m_objectType == afType::RIGID_BODY){
+        objectName = regex_replace(objectName, regex{" "}, string{"_"});
+        m_interface[0]->crtkInterface->add_measured_cp(objectName);
+        m_interface[0]->crtkInterface->add_servo_cp(objectName);
+        m_interface[0]->m_measuredObjectPtr.push_back(m_objectPtr); 
+        m_interface[0]->m_servoObjectPtr.push_back(m_objectPtr); 
+    }
+
+    if (m_objectAttribs->m_identificationAttribs.m_objectType == afType::LIGHT){
+        objectName = regex_replace(objectName, regex{" "}, string{"_"});
+        m_interface[0]->m_measuredObjectPtr.push_back(m_objectPtr);
+        m_interface[0]->m_servoObjectPtr.push_back(m_objectPtr);
+        m_interface[0]->crtkInterface->add_measured_cp(objectName);
+        m_interface[0]->crtkInterface->add_servo_cp(objectName);
+    }
+
+    if (m_objectAttribs->m_identificationAttribs.m_objectType == afType::CAMERA){
+        objectName = regex_replace(objectName, regex{" "}, string{"_"});
+        m_interface[0]->m_measuredObjectPtr.push_back(m_objectPtr);
+        m_interface[0]->m_servoObjectPtr.push_back(m_objectPtr);
+        m_interface[0]->crtkInterface->add_measured_cp(objectName);
+        m_interface[0]->crtkInterface->add_servo_cp(objectName);
+    }
+
+    return 1;
 }
 
 
