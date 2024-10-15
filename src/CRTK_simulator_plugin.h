@@ -51,6 +51,7 @@
 #include <boost/algorithm/string.hpp>
 #include "afCRTKInterface.h"
 #include <regex>
+#include "CRTK_base_plugin.h"
 
 namespace boost{
     namespace program_options{
@@ -63,28 +64,8 @@ namespace p_opt = boost::program_options;
 using namespace std;
 using namespace ambf;
 
-string getNamefromPtr(afBaseObjectPtr baseBodyPtr);
 
-
-class Interface{
-    public:
-        Interface(string ifname);
-        string m_name;
-        afType m_type;
-
-        afCRTKInterface* crtkInterface;
-
-        // AMBF Pointer
-        // Joint related Pointers
-        vector<afJointPtr> m_measuredJointsPtr, m_servoJointsPtr;
-        // RigidBody Pointers
-        vector<afRigidBodyPtr> m_measuredCPRBsPtr, m_measuredCFRBsPtr, m_servoCPRBsPtr, m_servoCFRBsPtr; 
-        // Non RigidBody Pointers
-        vector<afBaseObjectPtr> m_measuredObjectPtr, m_servoObjectPtr;
-
-};
-
-class afCRTKSimulatorPlugin: public afSimulatorPlugin{
+class afCRTKSimulatorPlugin: public afSimulatorPlugin, public afCRTKBasePlugin{
     public:
         afCRTKSimulatorPlugin();
         virtual int init(int argc, char** argv, const afWorldPtr a_afWorld) override;
@@ -96,7 +77,7 @@ class afCRTKSimulatorPlugin: public afSimulatorPlugin{
 
     protected:
         int readConfigFile(string config_filepath);
-        int InitInterface(YAML::Node& node, Interface* interface, string ifname);
+        int InitInterface(YAML::Node& node, Interface* interface);
 
     // private:
         // Pointer to the world
@@ -104,9 +85,6 @@ class afCRTKSimulatorPlugin: public afSimulatorPlugin{
 
         // Path
         string m_current_filepath;
-
-        int m_num;
-        vector<Interface*> m_interface;
         map<string, Interface*> m_namespaces;
         
 };

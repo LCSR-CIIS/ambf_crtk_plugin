@@ -47,14 +47,17 @@ afCRTKInterface::afCRTKInterface(string a_namespace){
     init(a_namespace);
 }
 
+
 afCRTKInterface::~afCRTKInterface(){
 }
+
 
 void afCRTKInterface::init(string a_namespace){
     m_rosNode = afROSNode::getNode();
     m_nameSpace = a_namespace;
     cout << "Name Space:" << m_nameSpace << endl;
 }
+
 
 void afCRTKInterface::add_allInterface(string a_namespace){
     m_measuredCPPub = m_rosNode->advertise<geometry_msgs::PoseStamped>(m_nameSpace + "/measured_cp", 1);
@@ -64,6 +67,7 @@ void afCRTKInterface::add_allInterface(string a_namespace){
     m_servoJPSub = m_rosNode->subscribe(m_nameSpace + "/servo_jp", 1, &afCRTKInterface::servo_JPCallback, this);
     m_servoCFSub = m_rosNode->subscribe(m_nameSpace + "/servo_cf", 1 , &afCRTKInterface::servo_CFCallback, this);
 }
+
 
 void afCRTKInterface::add_measured_cp(string a_namespace){
     string baseName;
@@ -76,6 +80,7 @@ void afCRTKInterface::add_measured_cp(string a_namespace){
     m_measuredCPPub = m_rosNode->advertise<geometry_msgs::PoseStamped>(baseName + "/measured_cp", 1);
     m_measuredCPPubMap[a_namespace] = m_rosNode->advertise<geometry_msgs::PoseStamped>(baseName + "/measured_cp", 1);
 }
+
 
 void afCRTKInterface::add_measured_js(string a_namespace, vector<string> jointNames){
     string baseName;
@@ -93,6 +98,7 @@ void afCRTKInterface::add_measured_js(string a_namespace, vector<string> jointNa
     }
 }
 
+
 void afCRTKInterface::add_measured_cf(string a_namespace){
     string baseName;
     if(a_namespace == ""){
@@ -102,9 +108,9 @@ void afCRTKInterface::add_measured_cf(string a_namespace){
         baseName = m_nameSpace + "/" + a_namespace;
     }
     m_measuredCFPub = m_rosNode->advertise<geometry_msgs::WrenchStamped>(baseName + "/measured_cf", 1);
-    m_measuredCFPubMap[a_namespace] = m_rosNode->advertise<geometry_msgs::WrenchStamped>(baseName + "/measured_cf", 1);
-    
+    m_measuredCFPubMap[a_namespace] = m_rosNode->advertise<geometry_msgs::WrenchStamped>(baseName + "/measured_cf", 1);  
 }
+
 
 void afCRTKInterface::add_servo_cp(string a_namespace){
     string baseName;
@@ -118,6 +124,7 @@ void afCRTKInterface::add_servo_cp(string a_namespace){
     m_servoCPSubMap[a_namespace] = m_rosNode->subscribe(baseName + "/servo_cp", 1, &afCRTKInterface::servo_CPCallback, this);
 }
 
+
 void afCRTKInterface::add_servo_jp(string a_namespace){
     string baseName;
     if(a_namespace == ""){
@@ -128,6 +135,7 @@ void afCRTKInterface::add_servo_jp(string a_namespace){
     }
     m_servoJPSub = m_rosNode->subscribe(baseName + "/servo_jp", 1, &afCRTKInterface::servo_JPCallback, this);
 }
+
 
 void afCRTKInterface::add_servo_cf(string a_namespace){
     string baseName;
@@ -141,8 +149,7 @@ void afCRTKInterface::add_servo_cf(string a_namespace){
     m_servoCFSubMap[a_namespace] = m_rosNode->subscribe(baseName + "/servo_cf", 1, &afCRTKInterface::servo_CFCallback, this);
 }
 
-        
-    
+   
 void afCRTKInterface::servo_CPCallback(geometry_msgs::PoseStampedConstPtr msg){
     m_servo_cp.setLocalPos(cVector3d(msg->pose.position.x,
                                         msg->pose.position.y,
@@ -158,6 +165,7 @@ void afCRTKInterface::servo_CPCallback(geometry_msgs::PoseStampedConstPtr msg){
     m_is_servo_cp = true;
 }
 
+
 void afCRTKInterface::servo_JPCallback(sensor_msgs::JointStateConstPtr msg){
     // if (msg->position.size() != m_servo_jp.size()){
     //     cerr << "ERROR! IN Measured JS, JOINT LENGTH MUST BE " << m_measured_js.name.size() << endl;
@@ -166,6 +174,7 @@ void afCRTKInterface::servo_JPCallback(sensor_msgs::JointStateConstPtr msg){
     m_servo_jp = msg->position;
     m_is_servo_jp = true;
 }
+
 
 void afCRTKInterface::servo_CFCallback(geometry_msgs::WrenchStampedConstPtr msg){
     m_servo_cf[0] = msg->wrench.force.x;
@@ -177,20 +186,24 @@ void afCRTKInterface::servo_CFCallback(geometry_msgs::WrenchStampedConstPtr msg)
     m_is_servo_cf = true;
 }
 
+
 bool afCRTKInterface::servo_cp(cTransform& cp){
     cp = m_servo_cp;
     return m_is_servo_cp;
 }
+
 
 bool afCRTKInterface::servo_jp(vector<double> & jp){
     jp = m_servo_jp;
     return m_is_servo_jp;
 }
 
+
 bool afCRTKInterface::servo_cf(vector<double> & cf){
     cf = m_servo_cf;
     return m_is_servo_cf;
 }
+
 
 void afCRTKInterface::measured_cp(cTransform &trans, string name){
     
@@ -228,6 +241,7 @@ void afCRTKInterface::measured_js(vector<double>& q){
     m_measuredJSPub.publish(m_measured_js);
 }
 
+
 void afCRTKInterface::measured_cf(vector<double>& force, string name){
 
     if (force.size() != 6){
@@ -248,6 +262,5 @@ void afCRTKInterface::measured_cf(vector<double>& force, string name){
 
     else{
         m_measuredCFPubMap[name].publish(m_measured_cf);
-    }
-    
+    }  
 }

@@ -105,6 +105,7 @@ private:
     ros::Publisher m_measuredCPPub;
     ros::Publisher m_measuredJSPub;
     ros::Publisher m_measuredCFPub;
+    ros::Publisher m_statePub;
 
     map<string, ros::Publisher> m_measuredCPPubMap;
     map<string, ros::Publisher> m_measuredCFPubMap;

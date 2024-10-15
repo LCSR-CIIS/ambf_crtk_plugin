@@ -50,27 +50,13 @@
 #include <regex>
 #include <boost/algorithm/string.hpp>
 
-
+#include "CRTK_base_plugin.h"
 
 using namespace std;
 using namespace ambf;
 
-class Interface{
-    public:
-        Interface(string ifname);
-        string m_name;
-        afType m_type;
 
-        afCRTKInterface* crtkInterface;
-
-        // AMBF Pointer
-        vector<afBaseObjectPtr> m_measuredObjectPtr, m_servoObjectPtr;
-
-};
-
-string getNamefromPtr(afBaseObjectPtr baseBodyPtr);
-
-class afCRTKObjectPlugin: public afObjectPlugin{
+class afCRTKObjectPlugin: public afObjectPlugin, public afCRTKBasePlugin{
     public:
         afCRTKObjectPlugin();
         virtual int init(const afBaseObjectPtr a_objectPtr, afBaseObjectAttribsPtr a_attribs) override;
@@ -85,7 +71,6 @@ class afCRTKObjectPlugin: public afObjectPlugin{
         // Pointer to the world
         afWorldPtr m_worldPtr;
 
-        Interface* m_interface;
 };
 
 

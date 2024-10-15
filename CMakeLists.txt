@@ -52,6 +52,8 @@ add_definitions(${AMBF_DEFINITIONS})
 
 # For spacenav control plugin
 add_library(ambf_crtk_simulator_plugin SHARED
+    src/CRTK_base_plugin.cpp
+    src/CRTK_base_plugin.h
     src/CRTK_simulator_plugin.cpp
     src/CRTK_simulator_plugin.h
     src/afCRTKInterface.cpp
@@ -64,6 +66,8 @@ set_property(TARGET ambf_crtk_simulator_plugin PROPERTY POSITION_INDEPENDENT_COD
 
 # Model Plugins
 add_library(ambf_crtk_model_plugin SHARED
+    src/CRTK_base_plugin.cpp
+    src/CRTK_base_plugin.h
     src/CRTK_model_plugin.cpp
     src/CRTK_model_plugin.h
     src/afCRTKInterface.cpp
@@ -74,6 +78,8 @@ set_property(TARGET ambf_crtk_model_plugin PROPERTY POSITION_INDEPENDENT_CODE TR
 
 # Object Plugins
 add_library(ambf_crtk_object_plugin SHARED
+    src/CRTK_base_plugin.cpp
+    src/CRTK_base_plugin.h    
     src/CRTK_object_plugin.cpp
     src/CRTK_object_plugin.h
     src/afCRTKInterface.cpp

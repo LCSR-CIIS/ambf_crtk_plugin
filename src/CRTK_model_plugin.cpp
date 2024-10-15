@@ -43,16 +43,12 @@
 
 #include "CRTK_model_plugin.h"
 
-Interface::Interface(string ifname){
-    m_name = ifname;
-    crtkInterface = new afCRTKInterface(ifname);
-}
-
 afCRTKModelPlugin::afCRTKModelPlugin(){
     cout << "/*********************************************" << endl;
     cout << "/* AMBF Model Plugin for CRTK Interface" << endl;
     cout << "/*********************************************" << endl;
 }
+
 
 int afCRTKModelPlugin::init(const afModelPtr a_modelPtr, afModelAttribsPtr a_attribs){
     // Store Pointer for the world
@@ -63,7 +59,7 @@ int afCRTKModelPlugin::init(const afModelPtr a_modelPtr, afModelAttribsPtr a_att
     m_worldPtr->m_bulletWorld->getSolverInfo().m_erp = 1.0;  
     m_worldPtr->m_bulletWorld->getSolverInfo().m_erp2 = 1.0; 
     
-    //ChildrenMap: map<map<afType, map<string, afBaseObject*> >
+    //ChildrenMap: map<map<afType, map<string, afBaseObject*> > > 
     afChildrenMap::iterator cIt;
     afChildrenMap* childrenMap = m_modelPtr->getChildrenMap();
     for(cIt = childrenMap->begin(); cIt != childrenMap->end(); ++cIt){   
@@ -143,7 +139,6 @@ int afCRTKModelPlugin::init(const afModelPtr a_modelPtr, afModelAttribsPtr a_att
                 interface->crtkInterface->add_servo_cp(objectName);
             }
         }
-    
     }
     vector<string> jointNames;
     for (size_t i = 0; i < m_interface.size(); i ++){
@@ -160,107 +155,26 @@ int afCRTKModelPlugin::init(const afModelPtr a_modelPtr, afModelAttribsPtr a_att
     return 1;
 }
 
-void afCRTKModelPlugin::graphicsUpdate(){
 
+void afCRTKModelPlugin::graphicsUpdate(){
 }
 
+
 void afCRTKModelPlugin::physicsUpdate(double dt){
-    for (size_t index = 0; index < m_interface.size(); index ++){
-        // measured_cp
-        if (m_interface[index]->m_measuredCPRBsPtr.size() > 0){
-            for (size_t i = 0; i < m_interface[index]->m_measuredCPRBsPtr.size(); i++){
-                cTransform measured_cp = m_interface[index]->m_measuredCPRBsPtr[i]->getLocalTransform();
-                m_interface[index]->crtkInterface->measured_cp(measured_cp, getNamefromPtr((afBaseObjectPtr)m_interface[index]->m_measuredCPRBsPtr[i]));
-            }
-        }
-
-        // measured_cp
-        if (m_interface[index]->m_measuredObjectPtr.size() > 0){
-            for (size_t i = 0; i < m_interface[index]->m_measuredObjectPtr.size(); i++){
-                cTransform measured_cp = m_interface[index]->m_measuredObjectPtr[i]->getLocalTransform();
-                m_interface[index]->crtkInterface->measured_cp(measured_cp, getNamefromPtr((afBaseObjectPtr)m_interface[index]->m_measuredObjectPtr[i]));
-            }
-        }
-
-        // measured_js
-        if (m_interface[index]->m_measuredJointsPtr.size() > 0){
-            vector<double> measured_js;
-            for  (size_t i = 0; i < m_interface[index]->m_measuredJointsPtr.size(); i++){
-                double jointPos = m_interface[index]->m_measuredJointsPtr[i]->getPosition();
-                measured_js.push_back(jointPos);
-            }
-            m_interface[index]->crtkInterface->measured_js(measured_js);
-        }
-
-        // measured_cf
-        if (m_interface[index]->m_measuredCFRBsPtr.size() > 0){
-            for (size_t i = 0; i < m_interface[index]->m_measuredCFRBsPtr.size(); i++){
-                btVector3 bt_measured_cf = m_interface[index]->m_measuredCFRBsPtr[i]->m_estimatedForce;
-                vector<double> measured_cf{bt_measured_cf.getX(),bt_measured_cf.getY(),bt_measured_cf.getZ(),0,0,0};
-                m_interface[index]->crtkInterface->measured_cf(measured_cf);
-            }
-        }
-
-        // servo_cp
-        if (m_interface[index]->m_servoCPRBsPtr.size() > 0){
-            cTransform servo_cp;
-            for (size_t i = 0; i < m_interface[index]->m_servoCPRBsPtr.size(); i++){
-                if(m_interface[index]->crtkInterface->servo_cp(servo_cp)){
-                    // Change to btVector and Matrix
-                    btTransform trans;
-                    btVector3 btTrans;
-                    
-                    btTrans.setValue(servo_cp.getLocalPos().x(), servo_cp.getLocalPos().y(), servo_cp.getLocalPos().z());     
-                    trans.setOrigin(btTrans);
-                    cQuaternion quat;
-                    quat.fromRotMat(servo_cp.getLocalRot());
-                    btQuaternion btRot(quat.x,quat.y,quat.z,quat.w);
-                    trans.setRotation(btRot);
-
-                    btTransform Tcommand;
-                    Tcommand = trans;
-                    m_interface[index]->m_servoCPRBsPtr[i]->m_bulletRigidBody->getMotionState()->setWorldTransform(Tcommand);
-                    m_interface[index]->m_servoCPRBsPtr[i]->m_bulletRigidBody->setWorldTransform(Tcommand);
-                }   
-            }
-        }
-
-        // servo_cp
-        if (m_interface[index]->m_servoObjectPtr.size() > 0){
-            cTransform servo_cp;
-            for (size_t i = 0; i < m_interface[index]->m_servoObjectPtr.size(); i++){
-                if(m_interface[index]->crtkInterface->servo_cp(servo_cp)){
-                    m_interface[index]->m_servoObjectPtr[i]->setLocalTransform(servo_cp);
-                }   
-            }
-        }
-
-        // servo_jp
-        if (m_interface[index]->m_servoJointsPtr.size() > 0){
-            vector<double> servo_jp;
-            if(m_interface[index]->crtkInterface->servo_jp(servo_jp)){
-                for  (size_t i = 0; i < m_interface[index]->m_servoJointsPtr.size(); i++){
-                    m_interface[index]->m_servoJointsPtr[i]->commandPosition(servo_jp[i]);
-                }
-            }
-        }
-
-        // servo_cf
-        if (m_interface[index]->m_servoCFRBsPtr.size() > 0){
-            for (size_t i = 0; i < m_interface[index]->m_servoCFRBsPtr.size(); i++){
-                vector<double> servo_cf;
-                if(m_interface[index]->crtkInterface->servo_cf(servo_cf)){
-                    m_interface[index]->m_servoCFRBsPtr[i]->applyForce(cVector3d(servo_cf[0], servo_cf[1], servo_cf[2]));
-                    m_interface[index]->m_servoCFRBsPtr[i]->applyTorque(cVector3d(servo_cf[3], servo_cf[4], servo_cf[5]));
-                }
-            }
-        }
+    for (Interface* interface:m_interface){
+        runMeasuredCP(interface);
+        runMeasuredJS(interface);
+        runMeasuredCF(interface);
+        runServoCP(interface);
+        runServoJP(interface);
+        runServoCF(interface);
     }
 }
 
-void afCRTKModelPlugin::reset(){
 
+void afCRTKModelPlugin::reset(){
 }
+
 
 bool afCRTKModelPlugin::close(){
     return true;

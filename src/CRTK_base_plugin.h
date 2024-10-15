@@ -36,7 +36,7 @@
 
     \author    <hishida3@jhu.edu>
     \author    Hisashi Ishida
-    \date      03.21.2024
+    \date      10.10.2024
     
 */
 //==============================================================================
@@ -45,31 +45,63 @@
 // To silence warnings on MacOS
 #define GL_SILENCE_DEPRECATION
 #include <afFramework.h>
-#include "afCRTKInterface.h"
+#include <yaml-cpp/yaml.h>
 
+#include <boost/program_options.hpp>
 #include <boost/algorithm/string.hpp>
+#include "afCRTKInterface.h"
 #include <regex>
-#include "CRTK_base_plugin.h"
 
+namespace boost{
+    namespace program_options{
+        class variables_map;
+    }
+}
+
+namespace p_opt = boost::program_options;
 
 using namespace std;
 using namespace ambf;
 
-class afCRTKModelPlugin: public afModelPlugin, public afCRTKBasePlugin{
+class Interface{
     public:
-        afCRTKModelPlugin();
-        virtual int init(const afModelPtr a_modelPtr, afModelAttribsPtr a_attribs) override;
-        virtual void graphicsUpdate() override;
-        virtual void physicsUpdate(double dt) override;
-        virtual void reset() override;
-        virtual bool close() override;
+        Interface(string ifname);
+        string m_name;
+        afType m_type;
+        afCRTKInterface* crtkInterface;
 
-    protected:
-    // private:
-        // Pointer to the world
-        afModelPtr m_modelPtr;
-        map<string, Interface*> m_namespaces;
+        // AMBF Pointer
+        // Joint related Pointers
+        vector<afJointPtr> m_measuredJointsPtr, m_servoJointsPtr;
+        vector<afJointPtr> m_measuredCPJointsPtr, m_servoCPJointsPtr;
+        // RigidBody Pointers
+        vector<afRigidBodyPtr> m_measuredCPRBsPtr, m_measuredCFRBsPtr, m_servoCPRBsPtr, m_servoCFRBsPtr; 
+        // Non RigidBody Pointers
+        vector<afBaseObjectPtr> m_measuredObjectPtr, m_servoObjectPtr;
+        // Pointer for reference
+        afBaseObjectPtr m_referenceMeasuredPtr, m_referenceServoPtr;
 };
 
+class afCRTKBasePlugin{
+    public:
+        afCRTKBasePlugin();
 
-AF_REGISTER_MODEL_PLUGIN(afCRTKModelPlugin)
+    protected:
+        int readConfigFile(string config_filepath);
+        int InitInterface(YAML::Node& node, Interface* interface);
+        void runMeasuredCP(Interface* interface);
+        void runMeasuredJS(Interface* interface);
+        void runMeasuredCF(Interface* interface);
+        void runServoCP(Interface* interface);
+        void runServoJP(Interface* interface);
+        void runServoCF(Interface* interface);
+
+        string getNamefromPtr(afBaseObjectPtr baseBodyPtr);
+
+        // Pointer to the world
+        afWorldPtr m_worldPtr;
+
+        int m_numInterface;
+        vector<Interface*> m_interface;
+};
+

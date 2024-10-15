@@ -1,0 +1,334 @@
+//==============================================================================
+/*
+    Software License Agreement (BSD License)
+    Copyright (c) 2019-2024
+
+    All rights reserved.
+
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions
+    are met:
+
+    * Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+
+    * Redistributions in binary form must reproduce the above
+    copyright notice, this list of conditions and the following
+    disclaimer in the documentation and/or other materials provided
+    with the distribution.
+
+    * Neither the name of authors nor the names of its contributors may
+    be used to endorse or promote products derived from this software
+    without specific prior written permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+    "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+    LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+    FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+    COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+    INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+    BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+    CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+    LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
+    ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+    POSSIBILITY OF SUCH DAMAGE.
+
+    \author    <hishida3@jhu.edu>
+    \author    Hisashi Ishida
+    \date      10.10.2024
+    
+*/
+//==============================================================================
+
+#include "CRTK_base_plugin.h"
+
+Interface::Interface(string ifname){
+    m_name = ifname;
+    crtkInterface = new afCRTKInterface(ifname);
+}
+
+int afCRTKBasePlugin::readConfigFile(string config_filepath){
+    YAML::Node node = YAML::LoadFile(config_filepath);
+
+    m_numInterface = node["interface"].size();
+    for (size_t i = 0; i < m_numInterface; i++){
+        string ifname = node["interface"][i].as<string>();
+        Interface* interface = new Interface(ifname);
+        m_interface.push_back(interface);
+        
+        if (InitInterface(node, interface) == -1)
+            return -1;
+    }
+    return 1;         
+}
+
+int afCRTKBasePlugin::InitInterface(YAML::Node& node, Interface* interface){
+    
+    if (node[interface->m_name]["measured_cp"]){
+        if(node[interface->m_name]["measured_cp"]["rigidbody"]){
+            cerr << "[INFO!] Adding measured_cp ... " << endl;
+            for (int j = 0; j < node[interface->m_name]["measured_cp"]["rigidbody"].size(); j++){
+                string rigidName = node[interface->m_name]["measured_cp"]["rigidbody"][j].as<string>();
+                afRigidBodyPtr rigidBodyPtr = m_worldPtr->getRigidBody(rigidName);
+
+                if(!rigidBodyPtr){
+                    cerr << ">> ERROR!! No RigidBody Named " << node[interface->m_name]["measured_cp"]["rigidbody"][j].as<string>() << " for measured_cp" << endl;
+                    return -1;
+                }
+                interface->m_measuredCPRBsPtr.push_back(rigidBodyPtr);
+                rigidName = getNamefromPtr((afBaseObjectPtr)rigidBodyPtr);
+                
+
+                if(node[interface->m_name]["measured_cp"]["namespace"] && node[interface->m_name]["measured_cp"]["rigidbody"].size() == node[interface->m_name]["measured_cp"]["namespace"].size())
+                    interface->crtkInterface->add_measured_cp(node[interface->m_name]["measured_cp"]["namespace"][j].as<string>() + '/' + rigidName);
+                else
+                    interface->crtkInterface->add_measured_cp(rigidName);           
+            }
+        }
+
+        else{  
+            cerr << ">> ERROR!! No RigidBody specified for measured_cp" << endl;
+            return -1;
+        }
+    }
+    if (node[interface->m_name]["measured_js"]){
+        vector<string> jointNames;
+        cerr << "[INFO!] Adding measured_js ... " << endl;
+        for (size_t j = 0; j < node[interface->m_name]["measured_js"]["joints"].size(); j++){
+            string jointName = node[interface->m_name]["measured_js"]["joints"][j].as<string>();
+            interface->m_measuredJointsPtr.push_back(m_worldPtr->getJoint(jointName));
+            jointNames.push_back(jointName);
+        }
+
+        if(node[interface->m_name]["measured_js"]["namespace"])
+            interface->crtkInterface->add_measured_js(node[interface->m_name]["measured_js"]["namespace"].as<string>(), jointNames);
+        else
+            interface->crtkInterface->add_measured_js("", jointNames);
+    }
+
+    if (node[interface->m_name]["measured_cf"]){
+        if(node[interface->m_name]["measured_cf"]["rigidbody"]){
+            cerr << "[INFO!] Adding measured_cf ... " << endl;
+            for (int j = 0; j < node[interface->m_name]["measured_cf"]["rigidbody"].size(); j++){
+                string rigidName = node[interface->m_name]["measured_cf"]["rigidbody"][j].as<string>();
+                afRigidBodyPtr rigidBodyPtr = m_worldPtr->getRigidBody(rigidName);                
+                
+                if(!rigidBodyPtr){
+                    cerr << ">> ERROR!! No RigidBody Named " << node[interface->m_name]["measured_cf"]["rigidbody"][j].as<string>() << " for measured_cf" << endl;
+                    return -1;
+                }
+                interface->m_measuredCFRBsPtr.push_back(rigidBodyPtr);
+                rigidName = getNamefromPtr((afBaseObjectPtr)rigidBodyPtr);
+
+                if(node[interface->m_name]["measured_cf"]["namespace"] && node[interface->m_name]["measured_cf"]["rigidbody"].size() == node[interface->m_name]["measured_cf"]["namespace"].size())
+                    interface->crtkInterface->add_measured_cf(node[interface->m_name]["measured_cf"]["namespace"][j].as<string>()+ '/' + rigidName);
+                else
+                    interface->crtkInterface->add_measured_cf(rigidName);
+            }
+        }
+
+        else{  
+            cerr << ">> ERROR!! No RigidBody specified for measured_cf" << endl;
+            return -1;
+        }
+    }
+
+    if (node[interface->m_name]["servo_cp"]){
+        if(node[interface->m_name]["servo_cp"]["rigidbody"]){
+            cerr << "[INFO!] Adding servo_cp ... " << endl;
+            for (int j = 0; j < node[interface->m_name]["servo_cp"]["rigidbody"].size(); j++){
+                string rigidName = node[interface->m_name]["servo_cp"]["rigidbody"][j].as<string>();
+                afRigidBodyPtr rigidBodyPtr = m_worldPtr->getRigidBody(rigidName);
+                if(!rigidBodyPtr){
+                    cerr << ">> ERROR!! No RigidBody Named " << node[interface->m_name]["servo_cp"]["rigidbody"][j].as<string>() << " for servo_cp" << endl;
+                    return -1;
+                }
+
+                interface->m_servoCPRBsPtr.push_back(rigidBodyPtr);
+            
+                rigidName = getNamefromPtr((afBaseObjectPtr)rigidBodyPtr);
+
+                if(node[interface->m_name]["servo_cp"]["namespace"]&& node[interface->m_name]["servo_cp"]["rigidbody"].size() == node[interface->m_name]["servo_cp"]["namespace"].size())
+                    interface->crtkInterface->add_servo_cp(node[interface->m_name]["servo_cp"]["rigidbody"][j]["namespace"].as<string>() + '/' = rigidName);
+                else
+                    interface->crtkInterface->add_servo_cp(rigidName);
+            }
+        }
+
+        else{  
+            cerr << ">> ERROR!! No RigidBody specified for servo_cp" << endl;
+            return -1;
+        }
+    }
+
+    if (node[interface->m_name]["servo_jp"]){
+        cerr << "[INFO!] Adding servo_jp ... " << endl;
+        vector<string> jointNames;
+        for (size_t j = 0; j < node[interface->m_name]["servo_jp"]["joints"].size(); j++){
+            string jointName = node[interface->m_name]["servo_jp"]["joints"][j].as<string>();
+            jointNames.push_back(jointName);
+            interface->m_servoJointsPtr.push_back(m_worldPtr->getJoint(jointName));
+        }
+
+        if(node[interface->m_name]["servo_jp"]["namespace"])
+            interface->crtkInterface->add_servo_jp(node[interface->m_name]["servo_jp"]["namespace"].as<string>());
+        else
+            interface->crtkInterface->add_servo_jp("");
+    }
+
+    if (node[interface->m_name]["servo_cf"]){
+        if(node[interface->m_name]["servo_cf"]["rigidbody"]){
+            cerr << "[INFO!] Adding servo_cf ... " << endl;
+            for (int j = 0; j < node[interface->m_name]["servo_cf"]["rigidbody"].size(); j++){
+                string rigidName = node[interface->m_name]["servo_cf"]["rigidbody"].as<string>();
+                afRigidBodyPtr rigidBodyPtr = m_worldPtr->getRigidBody(rigidName);
+                if(!rigidBodyPtr){
+                    cerr << ">> ERROR!! No RigidBody Named " << node[interface->m_name]["servo_cf"]["rigidbody"].as<string>() << " for servo_cf" << endl;
+                    return -1;
+                }
+                interface->m_servoCFRBsPtr.push_back(rigidBodyPtr);
+                
+                rigidName = getNamefromPtr((afBaseObjectPtr)rigidBodyPtr);
+                if(node[interface->m_name]["servo_cf"]["namespace"])
+                    interface->crtkInterface->add_servo_cf(node[interface->m_name]["servo_cf"]["namespace"].as<string>() + '/' + rigidName);
+                else
+                    interface->crtkInterface->add_servo_cf(rigidName);
+            }
+        }
+
+        else{  
+            cerr << ">> ERROR!! No RigidBody specified for servo_cp" << endl;
+            return -1;
+        }
+    }
+
+    cerr << "Successfully initialized interface" << endl;
+    return 1;
+
+}
+
+void afCRTKBasePlugin::runMeasuredCP(Interface* interface){
+    // measured_cp
+    if (interface->m_measuredCPRBsPtr.size() > 0){
+        for (size_t i = 0; i < interface->m_measuredCPRBsPtr.size(); i++){
+            cTransform measured_cp = interface->m_measuredCPRBsPtr[i]->getLocalTransform();
+            interface->crtkInterface->measured_cp(measured_cp, getNamefromPtr((afBaseObjectPtr)interface->m_measuredCPRBsPtr[i]));
+        }
+    }
+
+    // measured_cp
+    if (interface->m_measuredObjectPtr.size() > 0){
+        for (size_t i = 0; i < interface->m_measuredObjectPtr.size(); i++){
+            cTransform measured_cp = interface->m_measuredObjectPtr[i]->getLocalTransform();
+            interface->crtkInterface->measured_cp(measured_cp, getNamefromPtr((afBaseObjectPtr)interface->m_measuredObjectPtr[i]));
+        }
+    }
+}
+
+
+void afCRTKBasePlugin::runMeasuredJS(Interface* interface){
+    // measured_js
+    if (interface->m_measuredJointsPtr.size() > 0){
+        vector<double> measured_js;
+        for  (size_t i = 0; i < interface->m_measuredJointsPtr.size(); i++){
+            double jointPos = interface->m_measuredJointsPtr[i]->getPosition();
+            measured_js.push_back(jointPos);
+        }
+        interface->crtkInterface->measured_js(measured_js);
+    }
+}
+
+
+void afCRTKBasePlugin::runMeasuredCF(Interface* interface){
+    // measured_cf
+    if (interface->m_measuredCFRBsPtr.size() > 0){
+        for (size_t i = 0; i < interface->m_measuredCFRBsPtr.size(); i++){
+            btVector3 bt_measured_cf = interface->m_measuredCFRBsPtr[i]->m_estimatedForce;
+            vector<double> measured_cf{bt_measured_cf.getX(),bt_measured_cf.getY(),bt_measured_cf.getZ(),0,0,0};
+            interface->crtkInterface->measured_cf(measured_cf);
+        }
+    }
+}
+
+
+void afCRTKBasePlugin::runServoCP(Interface* interface){
+    // servo_cp
+    if (interface->m_servoCPRBsPtr.size() > 0){
+        cTransform servo_cp;
+        for (size_t i = 0; i < interface->m_servoCPRBsPtr.size(); i++){
+            if(interface->crtkInterface->servo_cp(servo_cp)){
+                // Change to btVector and Matrix
+                btTransform trans;
+                btVector3 btTrans;
+                
+                btTrans.setValue(servo_cp.getLocalPos().x(), servo_cp.getLocalPos().y(), servo_cp.getLocalPos().z());     
+                trans.setOrigin(btTrans);
+                cQuaternion quat;
+                quat.fromRotMat(servo_cp.getLocalRot());
+                btQuaternion btRot(quat.x,quat.y,quat.z,quat.w);
+                trans.setRotation(btRot);
+
+                btTransform Tcommand;
+                Tcommand = trans;
+                interface->m_servoCPRBsPtr[i]->m_bulletRigidBody->getMotionState()->setWorldTransform(Tcommand);
+                interface->m_servoCPRBsPtr[i]->m_bulletRigidBody->setWorldTransform(Tcommand);
+            }   
+        }
+    }
+    // servo_cp  for baseObject
+    if (interface->m_servoObjectPtr.size() > 0){
+        cTransform servo_cp;
+        for (size_t i = 0; i < interface->m_servoObjectPtr.size(); i++){
+            if(interface->crtkInterface->servo_cp(servo_cp)){
+                interface->m_servoObjectPtr[i]->setLocalTransform(servo_cp);
+            }   
+        }
+    }
+}
+
+
+void afCRTKBasePlugin::runServoJP(Interface* interface){
+    // servo_jp
+    if (interface->m_servoJointsPtr.size() > 0){
+        vector<double> servo_jp;
+        if(interface->crtkInterface->servo_jp(servo_jp)){
+            for  (size_t i = 0; i < interface->m_servoJointsPtr.size(); i++){
+                interface->m_servoJointsPtr[i]->commandPosition(servo_jp[i]);
+            }
+        }
+    }
+}
+
+
+void afCRTKBasePlugin::runServoCF(Interface* interface){
+    // servo_cf
+    if (interface->m_servoCFRBsPtr.size() > 0){
+        for (size_t i = 0; i < interface->m_servoCFRBsPtr.size(); i++){
+            vector<double> servo_cf;
+            if(interface->crtkInterface->servo_cf(servo_cf)){
+                interface->m_servoCFRBsPtr[i]->applyForce(cVector3d(servo_cf[0], servo_cf[1], servo_cf[2]));
+                interface->m_servoCFRBsPtr[i]->applyTorque(cVector3d(servo_cf[3], servo_cf[4], servo_cf[5]));
+            }
+        }
+    }
+}
+
+
+string afCRTKBasePlugin::getNamefromPtr(afBaseObjectPtr baseBodyPtr){
+    // Get Namespace
+    string ns = baseBodyPtr->getAttributes()->m_identificationAttribs.m_namespace;
+    // cerr << ns.erase(0,9) << endl; // Erase "/ambf/env"
+    ns = ns.erase(0,10);
+    
+    string baseName = baseBodyPtr->getAttributes()->m_identifier; // BODY name_of_rigidBody
+    vector<string> v;
+    boost::split(v, baseName, boost::is_any_of(" ")); 
+
+    if (v.size() > 1){
+        baseName.erase(0,v[0].length()+1); //Remove BODY
+        baseName = baseName;//ns + baseName;
+    }
+    baseName = regex_replace(baseName, regex{" "}, string{"_"});
+    return baseName;
+}
