@@ -50,7 +50,7 @@ include_directories(${Boost_INCLUDE_DIRS})
 link_directories(${AMBF_LIBRARY_DIRS})
 add_definitions(${AMBF_DEFINITIONS})
 
-# For spacenav control plugin
+# For Simulator Plugin
 add_library(ambf_crtk_simulator_plugin SHARED
     src/CRTK_base_plugin.cpp
     src/CRTK_base_plugin.h
@@ -64,7 +64,7 @@ target_link_libraries (ambf_crtk_simulator_plugin ${Boost_LIBRARIES} ${AMBF_LIBR
 set_property(TARGET ambf_crtk_simulator_plugin PROPERTY POSITION_INDEPENDENT_CODE TRUE)
 
 
-# Model Plugins
+# Model Plugin
 add_library(ambf_crtk_model_plugin SHARED
     src/CRTK_base_plugin.cpp
     src/CRTK_base_plugin.h
