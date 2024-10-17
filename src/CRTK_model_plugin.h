@@ -58,7 +58,7 @@ using namespace ambf;
 class afCRTKModelPlugin: public afModelPlugin, public afCRTKBasePlugin{
     public:
         afCRTKModelPlugin();
-        virtual int init(const afModelPtr a_modelPtr, afModelAttribsPtr a_attribs) override;
+        virtual int init(const afModelPtr a_modelPtr, afModelAttribsPtr a_modelAttribs) override;
         virtual void graphicsUpdate() override;
         virtual void physicsUpdate(double dt) override;
         virtual void reset() override;
@@ -69,6 +69,10 @@ class afCRTKModelPlugin: public afModelPlugin, public afCRTKBasePlugin{
     // private:
         // Pointer to the world
         afModelPtr m_modelPtr;
+        string m_configPath;
+
+        bool m_isInitialized = false;
+
         map<string, Interface*> m_namespaces;
 };
 

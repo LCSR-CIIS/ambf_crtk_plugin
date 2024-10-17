@@ -76,14 +76,7 @@ class afCRTKSimulatorPlugin: public afSimulatorPlugin, public afCRTKBasePlugin{
         virtual bool close() override;
 
     protected:
-        int readConfigFile(string config_filepath);
-        int InitInterface(YAML::Node& node, Interface* interface);
-
-    // private:
-        // Pointer to the world
-        afWorldPtr m_worldPtr;
-
-        // Path
+        int loadCRTKInterfaceFromSimulator();
         string m_current_filepath;
         map<string, Interface*> m_namespaces;
         

@@ -48,8 +48,13 @@ Interface::Interface(string ifname){
     crtkInterface = new afCRTKInterface(ifname);
 }
 
+afCRTKBasePlugin::afCRTKBasePlugin(){
+}
+
 int afCRTKBasePlugin::readConfigFile(string config_filepath){
     YAML::Node node = YAML::LoadFile(config_filepath);
+
+    cerr << "Loading configuration file: " << config_filepath << endl;
 
     m_numInterface = node["interface"].size();
     for (size_t i = 0; i < m_numInterface; i++){
@@ -68,22 +73,32 @@ int afCRTKBasePlugin::InitInterface(YAML::Node& node, Interface* interface){
     if (node[interface->m_name]["measured_cp"]){
         if(node[interface->m_name]["measured_cp"]["rigidbody"]){
             cerr << "[INFO!] Adding measured_cp ... " << endl;
-            for (int j = 0; j < node[interface->m_name]["measured_cp"]["rigidbody"].size(); j++){
-                string rigidName = node[interface->m_name]["measured_cp"]["rigidbody"][j].as<string>();
-                afRigidBodyPtr rigidBodyPtr = m_worldPtr->getRigidBody(rigidName);
+            if (node[interface->m_name]["measured_cp"]["reference"]){
+                string objectName = node[interface->m_name]["measured_cp"]["reference"].as<string>();
+                interface->m_referenceMeasuredPtr = (afBaseObjectPtr)m_worldPtr->getRigidBody(objectName);
+            }
 
-                if(!rigidBodyPtr){
-                    cerr << ">> ERROR!! No RigidBody Named " << node[interface->m_name]["measured_cp"]["rigidbody"][j].as<string>() << " for measured_cp" << endl;
-                    return -1;
+            string rigidName = node[interface->m_name]["measured_cp"]["rigidbody"].as<string>();
+            afRigidBodyPtr rigidBodyPtr = m_worldPtr->getRigidBody(rigidName);
+
+            if(!rigidBodyPtr){
+                cerr << ">> ERROR!! No RigidBody Named " << node[interface->m_name]["measured_cp"]["rigidbody"].as<string>() << " for measured_cp" << endl;
+                return -1;
+            }
+            interface->m_measuredCPRBsPtr.push_back(rigidBodyPtr);
+            rigidName = getNamefromPtr((afBaseObjectPtr)rigidBodyPtr);
+            
+            if(node[interface->m_name]["measured_cp"]["namespace"]){
+                if (interface->m_referenceMeasuredPtr){
+                    interface->crtkInterface->add_measured_cp(node[interface->m_name]["measured_cp"]["namespace"].as<string>() + rigidName);
                 }
-                interface->m_measuredCPRBsPtr.push_back(rigidBodyPtr);
-                rigidName = getNamefromPtr((afBaseObjectPtr)rigidBodyPtr);
-                
-
-                if(node[interface->m_name]["measured_cp"]["namespace"] && node[interface->m_name]["measured_cp"]["rigidbody"].size() == node[interface->m_name]["measured_cp"]["namespace"].size())
-                    interface->crtkInterface->add_measured_cp(node[interface->m_name]["measured_cp"]["namespace"][j].as<string>() + '/' + rigidName);
-                else
-                    interface->crtkInterface->add_measured_cp(rigidName);           
+                interface->crtkInterface->add_measured_cp(node[interface->m_name]["measured_cp"]["namespace"].as<string>() + "/local/" + rigidName);
+            }
+            else{
+                if (interface->m_referenceMeasuredPtr){
+                    interface->crtkInterface->add_measured_cp(rigidName); 
+                }
+                interface->crtkInterface->add_measured_cp("local/" +rigidName); 
             }
         }
 
@@ -121,10 +136,12 @@ int afCRTKBasePlugin::InitInterface(YAML::Node& node, Interface* interface){
                 interface->m_measuredCFRBsPtr.push_back(rigidBodyPtr);
                 rigidName = getNamefromPtr((afBaseObjectPtr)rigidBodyPtr);
 
-                if(node[interface->m_name]["measured_cf"]["namespace"] && node[interface->m_name]["measured_cf"]["rigidbody"].size() == node[interface->m_name]["measured_cf"]["namespace"].size())
+                if(node[interface->m_name]["measured_cf"]["namespace"]){
                     interface->crtkInterface->add_measured_cf(node[interface->m_name]["measured_cf"]["namespace"][j].as<string>()+ '/' + rigidName);
-                else
-                    interface->crtkInterface->add_measured_cf(rigidName);
+                }
+                else{
+                    interface->crtkInterface->add_measured_cf(rigidName);                    
+                }
             }
         }
 
@@ -137,22 +154,32 @@ int afCRTKBasePlugin::InitInterface(YAML::Node& node, Interface* interface){
     if (node[interface->m_name]["servo_cp"]){
         if(node[interface->m_name]["servo_cp"]["rigidbody"]){
             cerr << "[INFO!] Adding servo_cp ... " << endl;
-            for (int j = 0; j < node[interface->m_name]["servo_cp"]["rigidbody"].size(); j++){
-                string rigidName = node[interface->m_name]["servo_cp"]["rigidbody"][j].as<string>();
-                afRigidBodyPtr rigidBodyPtr = m_worldPtr->getRigidBody(rigidName);
-                if(!rigidBodyPtr){
-                    cerr << ">> ERROR!! No RigidBody Named " << node[interface->m_name]["servo_cp"]["rigidbody"][j].as<string>() << " for servo_cp" << endl;
-                    return -1;
+            if (node[interface->m_name]["servo_cp"]["reference"]){
+                string objectName = node[interface->m_name]["servo_cp"]["reference"].as<string>();
+                interface->m_referenceServoPtr =  (afBaseObjectPtr)m_worldPtr->getRigidBody(objectName);
+            }
+            string rigidName = node[interface->m_name]["servo_cp"]["rigidbody"].as<string>();
+            afRigidBodyPtr rigidBodyPtr = m_worldPtr->getRigidBody(rigidName);
+            if(!rigidBodyPtr){
+                cerr << ">> ERROR!! No RigidBody Named " << node[interface->m_name]["servo_cp"]["rigidbody"].as<string>() << " for servo_cp" << endl;
+                return -1;
+            }
+
+            interface->m_servoCPRBsPtr.push_back(rigidBodyPtr);
+        
+            rigidName = getNamefromPtr((afBaseObjectPtr)rigidBodyPtr);
+
+            if(node[interface->m_name]["servo_cp"]["namespace"]){
+                if (interface->m_referenceServoPtr){
+                    interface->crtkInterface->add_servo_cp(node[interface->m_name]["servo_cp"]["rigidbody"]["namespace"].as<string>() + "/" + rigidName);
                 }
-
-                interface->m_servoCPRBsPtr.push_back(rigidBodyPtr);
-            
-                rigidName = getNamefromPtr((afBaseObjectPtr)rigidBodyPtr);
-
-                if(node[interface->m_name]["servo_cp"]["namespace"]&& node[interface->m_name]["servo_cp"]["rigidbody"].size() == node[interface->m_name]["servo_cp"]["namespace"].size())
-                    interface->crtkInterface->add_servo_cp(node[interface->m_name]["servo_cp"]["rigidbody"][j]["namespace"].as<string>() + '/' = rigidName);
-                else
+                interface->crtkInterface->add_servo_cp(node[interface->m_name]["servo_cp"]["rigidbody"]["namespace"].as<string>() + "/local/" + rigidName);
+            }
+            else{
+                if (interface->m_referenceServoPtr){
                     interface->crtkInterface->add_servo_cp(rigidName);
+                }
+                interface->crtkInterface->add_servo_cp("local/" + rigidName);
             }
         }
 
@@ -213,7 +240,10 @@ void afCRTKBasePlugin::runMeasuredCP(Interface* interface){
     if (interface->m_measuredCPRBsPtr.size() > 0){
         for (size_t i = 0; i < interface->m_measuredCPRBsPtr.size(); i++){
             cTransform measured_cp = interface->m_measuredCPRBsPtr[i]->getLocalTransform();
-            interface->crtkInterface->measured_cp(measured_cp, getNamefromPtr((afBaseObjectPtr)interface->m_measuredCPRBsPtr[i]));
+            if (interface->m_referenceMeasuredPtr){
+                interface->crtkInterface->measured_cp(measured_cp, getNamefromPtr((afBaseObjectPtr)interface->m_measuredCPRBsPtr[i]));
+            }
+            interface->crtkInterface->measured_cp(measured_cp, "local/" + getNamefromPtr((afBaseObjectPtr)interface->m_measuredCPRBsPtr[i]));
         }
     }
 
@@ -221,7 +251,10 @@ void afCRTKBasePlugin::runMeasuredCP(Interface* interface){
     if (interface->m_measuredObjectPtr.size() > 0){
         for (size_t i = 0; i < interface->m_measuredObjectPtr.size(); i++){
             cTransform measured_cp = interface->m_measuredObjectPtr[i]->getLocalTransform();
-            interface->crtkInterface->measured_cp(measured_cp, getNamefromPtr((afBaseObjectPtr)interface->m_measuredObjectPtr[i]));
+            if (interface->m_referenceMeasuredPtr){
+                interface->crtkInterface->measured_cp(measured_cp, getNamefromPtr((afBaseObjectPtr)interface->m_measuredObjectPtr[i]));
+            }
+            interface->crtkInterface->measured_cp(measured_cp, "local/" + getNamefromPtr((afBaseObjectPtr)interface->m_measuredObjectPtr[i]));
         }
     }
 }
@@ -294,7 +327,9 @@ void afCRTKBasePlugin::runServoJP(Interface* interface){
         vector<double> servo_jp;
         if(interface->crtkInterface->servo_jp(servo_jp)){
             for  (size_t i = 0; i < interface->m_servoJointsPtr.size(); i++){
-                interface->m_servoJointsPtr[i]->commandPosition(servo_jp[i]);
+                if(interface->m_servoJointsPtr[i]){
+                    interface->m_servoJointsPtr[i]->commandPosition(servo_jp[i]);
+                }
             }
         }
     }

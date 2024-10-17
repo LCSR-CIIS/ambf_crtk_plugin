@@ -72,11 +72,12 @@ int afCRTKSimulatorPlugin::init(int argc, char** argv, const afWorldPtr a_afWorl
     m_current_filepath = file_path.substr(0, file_path.rfind("/"));
 
     // Store Pointer for the world
-    m_worldPtr = a_afWorld;
+    afSimulatorPlugin::m_worldPtr = a_afWorld;
+    afCRTKBasePlugin::m_worldPtr = a_afWorld;
 
     // Improve the constratint
-    m_worldPtr->m_bulletWorld->getSolverInfo().m_erp = 1.0;  
-    m_worldPtr->m_bulletWorld->getSolverInfo().m_erp2 = 1.0; 
+    afSimulatorPlugin::m_worldPtr->m_bulletWorld->getSolverInfo().m_erp = 1.0;  
+    afSimulatorPlugin::m_worldPtr->m_bulletWorld->getSolverInfo().m_erp2 = 1.0; 
     
     // When config file is defined
     if(!config_filepath.empty()){
@@ -86,105 +87,7 @@ int afCRTKSimulatorPlugin::init(int argc, char** argv, const afWorldPtr a_afWorl
     // If the configuration file is not defined pop error
     else{
         cerr << "WARNING! NO configuration file specified." << endl;
-        // Load every Model/Object in the world
-        // ModelMap: map<string, afModelPtr>
-        afModelMap* map = m_worldPtr->getModelMap();
-        for (auto it=map->begin(); it != map->end(); it++){
-        
-            //ChildrenMap: map<map<afType, map<string, afBaseObject*> >
-            afChildrenMap::iterator cIt;
-            afChildrenMap* childrenMap = it->second->getChildrenMap();
-                        for(cIt = childrenMap->begin(); cIt != childrenMap->end(); ++cIt){   
-                for (auto it_child=cIt->second.begin(); it_child != cIt->second.end(); ++it_child){
-                    string wholeName = it_child->first;
-                    
-                    string objectName;
-                    string ns;
-                    vector<string> v;
-                    boost::split(v, wholeName, boost::is_any_of("/")); 
-
-                    if (v.size() ==4){
-                        objectName = v[3].substr(v[3].find(" ")+1);
-                        ns = "CRTK";
-                    }
-                    else if (v.size() > 4){
-                        vector<string> v1;
-                        boost::split(v1, wholeName, boost::is_any_of(" ")); 
-                        if (v1.size() > 1){
-                            objectName = wholeName.substr(wholeName.find(" ")+1);
-                        }
-                        else{
-                            objectName = v[4];
-                        }
-                        ns = "CRTK/" + v[3];
-                    }
-                    else
-                        return -1;
-                    
-                    Interface* interface;
-                    if (m_namespaces.find(ns) == m_namespaces.end()){
-                        // not found
-                        interface = new Interface(ns);
-                        m_namespaces[ns] = interface;
-                        m_interface.push_back(interface);
-                    } 
-                    else{
-                        // found
-                        interface = m_namespaces[ns];
-                    }
-
-                    if (it_child->second->getType() == afType::RIGID_BODY){
-                        afRigidBodyPtr rigidBodyPtr = m_worldPtr->getRigidBody(wholeName);
-                        objectName = regex_replace(objectName, regex{" "}, string{"_"});
-                        interface->crtkInterface->add_measured_cp(objectName);
-                        interface->crtkInterface->add_measured_cf(objectName);
-                        interface->crtkInterface->add_servo_cp(objectName);
-                        interface->crtkInterface->add_servo_cf(objectName);
-                        interface->m_measuredCPRBsPtr.push_back(rigidBodyPtr); 
-                        interface->m_measuredCFRBsPtr.push_back(rigidBodyPtr); 
-                        interface->m_servoCPRBsPtr.push_back(rigidBodyPtr); 
-                        interface->m_servoCFRBsPtr.push_back(rigidBodyPtr); 
-                    }
-
-                    if (it_child->second->getType() == afType::JOINT){
-                        afJointPtr jointPtr = m_worldPtr->getJoint(wholeName);
-                        objectName = regex_replace(objectName, regex{" "}, string{"_"});
-                        interface->m_measuredJointsPtr.push_back(jointPtr);
-                        interface->m_servoJointsPtr.push_back(jointPtr);
-                    }
-
-                    if (it_child->second->getType() == afType::LIGHT){
-                        afBaseObjectPtr objectPtr = m_worldPtr->getLight(wholeName);
-                        objectName = regex_replace(objectName, regex{" "}, string{"_"});
-                        interface->m_measuredObjectPtr.push_back(objectPtr);
-                        interface->m_servoObjectPtr.push_back(objectPtr);
-                        interface->crtkInterface->add_measured_cp(objectName);
-                        interface->crtkInterface->add_servo_cp(objectName);
-                    }
-
-                    if (it_child->second->getType() == afType::CAMERA){
-                        afBaseObjectPtr objectPtr = m_worldPtr->getCamera(wholeName);
-                        objectName = regex_replace(objectName, regex{" "}, string{"_"});
-                        interface->m_measuredObjectPtr.push_back(objectPtr);
-                        interface->m_servoObjectPtr.push_back(objectPtr);
-                        interface->crtkInterface->add_measured_cp(objectName);
-                        interface->crtkInterface->add_servo_cp(objectName);
-                    }
-                }
-            }
-        }
-        vector<string> jointNames;
-        for (size_t i = 0; i < m_interface.size(); i ++){
-            if(m_interface[i]->m_measuredJointsPtr.size() > 0){
-                for (size_t j = 0; j < m_interface[i]->m_measuredJointsPtr.size(); j++){
-                    jointNames.push_back(getNamefromPtr((afBaseObjectPtr)m_interface[i]->m_measuredJointsPtr[j]));
-                }
-                m_interface[i]->crtkInterface->add_measured_js("", jointNames);
-                m_interface[i]->crtkInterface->add_servo_jp("");
-            }
-            jointNames.clear();
-        }
-        cerr << "INFO! Initialization Successfully Finished!!" << endl;
+        loadCRTKInterfaceFromSimulator();
         return 1;
     }
 }
@@ -207,6 +110,108 @@ void afCRTKSimulatorPlugin::physicsUpdate(double dt){
         runServoJP(interface);
         runServoCF(interface);
     }
+}
+
+int afCRTKSimulatorPlugin::loadCRTKInterfaceFromSimulator(){
+    // Load every Model/Object in the world
+    // ModelMap: map<string, afModelPtr>
+    afModelMap* map = afSimulatorPlugin::m_worldPtr->getModelMap();
+    for (auto it=map->begin(); it != map->end(); it++){
+    
+        //ChildrenMap: map<map<afType, map<string, afBaseObject*> >
+        afChildrenMap::iterator cIt;
+        afChildrenMap* childrenMap = it->second->getChildrenMap();
+        for(cIt = childrenMap->begin(); cIt != childrenMap->end(); ++cIt){   
+            for (auto it_child=cIt->second.begin(); it_child != cIt->second.end(); ++it_child){
+                string wholeName = it_child->first;
+                
+                string objectName;
+                string ns;
+                vector<string> v;
+                boost::split(v, wholeName, boost::is_any_of("/")); 
+
+                if (v.size() ==4){
+                    objectName = v[3].substr(v[3].find(" ")+1);
+                    ns = "CRTK";
+                }
+                else if (v.size() > 4){
+                    vector<string> v1;
+                    boost::split(v1, wholeName, boost::is_any_of(" ")); 
+                    if (v1.size() > 1){
+                        objectName = wholeName.substr(wholeName.find(" ")+1);
+                    }
+                    else{
+                        objectName = v[4];
+                    }
+                    ns = "CRTK/" + v[3];
+                }
+                else
+                    return -1;
+                
+                Interface* interface;
+                if (m_namespaces.find(ns) == m_namespaces.end()){
+                    // not found
+                    interface = new Interface(ns);
+                    m_namespaces[ns] = interface;
+                    m_interface.push_back(interface);
+                } 
+                else{
+                    // found
+                    interface = m_namespaces[ns];
+                }
+
+                if (it_child->second->getType() == afType::RIGID_BODY){
+                    afRigidBodyPtr rigidBodyPtr = afSimulatorPlugin::m_worldPtr->getRigidBody(wholeName);
+                    objectName = regex_replace(objectName, regex{" "}, string{"_"});
+                    interface->crtkInterface->add_measured_cp(objectName);
+                    interface->crtkInterface->add_measured_cf(objectName);
+                    interface->crtkInterface->add_servo_cp(objectName);
+                    interface->crtkInterface->add_servo_cf(objectName);
+                    interface->m_measuredCPRBsPtr.push_back(rigidBodyPtr); 
+                    interface->m_measuredCFRBsPtr.push_back(rigidBodyPtr); 
+                    interface->m_servoCPRBsPtr.push_back(rigidBodyPtr); 
+                    interface->m_servoCFRBsPtr.push_back(rigidBodyPtr); 
+                }
+
+                if (it_child->second->getType() == afType::JOINT){
+                    afJointPtr jointPtr = afSimulatorPlugin::m_worldPtr->getJoint(wholeName);
+                    objectName = regex_replace(objectName, regex{" "}, string{"_"});
+                    interface->m_measuredJointsPtr.push_back(jointPtr);
+                    interface->m_servoJointsPtr.push_back(jointPtr);
+                }
+
+                if (it_child->second->getType() == afType::LIGHT){
+                    afBaseObjectPtr objectPtr = afSimulatorPlugin::m_worldPtr->getLight(wholeName);
+                    objectName = regex_replace(objectName, regex{" "}, string{"_"});
+                    interface->m_measuredObjectPtr.push_back(objectPtr);
+                    interface->m_servoObjectPtr.push_back(objectPtr);
+                    interface->crtkInterface->add_measured_cp(objectName);
+                    interface->crtkInterface->add_servo_cp(objectName);
+                }
+
+                if (it_child->second->getType() == afType::CAMERA){
+                    afBaseObjectPtr objectPtr = afSimulatorPlugin::m_worldPtr->getCamera(wholeName);
+                    objectName = regex_replace(objectName, regex{" "}, string{"_"});
+                    interface->m_measuredObjectPtr.push_back(objectPtr);
+                    interface->m_servoObjectPtr.push_back(objectPtr);
+                    interface->crtkInterface->add_measured_cp(objectName);
+                    interface->crtkInterface->add_servo_cp(objectName);
+                }
+            }
+        }
+    }
+    vector<string> jointNames;
+    for (size_t i = 0; i < m_interface.size(); i ++){
+        if(m_interface[i]->m_measuredJointsPtr.size() > 0){
+            for (size_t j = 0; j < m_interface[i]->m_measuredJointsPtr.size(); j++){
+                jointNames.push_back(getNamefromPtr((afBaseObjectPtr)m_interface[i]->m_measuredJointsPtr[j]));
+            }
+            m_interface[i]->crtkInterface->add_measured_js("", jointNames);
+            m_interface[i]->crtkInterface->add_servo_jp("");
+        }
+        jointNames.clear();
+    }
+    return 1;
 }
 
 void afCRTKSimulatorPlugin::reset(){

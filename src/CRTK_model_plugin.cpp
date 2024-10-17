@@ -50,7 +50,7 @@ afCRTKModelPlugin::afCRTKModelPlugin(){
 }
 
 
-int afCRTKModelPlugin::init(const afModelPtr a_modelPtr, afModelAttribsPtr a_attribs){
+int afCRTKModelPlugin::init(const afModelPtr a_modelPtr, afModelAttribsPtr a_modelAttribs){
     // Store Pointer for the world
     m_modelPtr = a_modelPtr;
     m_worldPtr = m_modelPtr->getWorldPtr();     //Ptr to the simulation world
@@ -59,25 +59,44 @@ int afCRTKModelPlugin::init(const afModelPtr a_modelPtr, afModelAttribsPtr a_att
     m_worldPtr->m_bulletWorld->getSolverInfo().m_erp = 1.0;  
     m_worldPtr->m_bulletWorld->getSolverInfo().m_erp2 = 1.0; 
     
+    YAML::Node specificationDataNode = YAML::Load(a_modelAttribs->getSpecificationData().m_rawData);
+
+    // If there is a configuration file given in the ADF file
+    if (specificationDataNode["crtk_config"]){
+        m_configPath = specificationDataNode["crtk_config"].as<string>();
+        cerr << "[INFO!] Reading configuration file: " << m_configPath << endl;
+        // return readConfigFile(m_configPath);
+        return 1;
+    }
+    
     // If there is no configuration file given
-    int result = loadCRTKInterfacefromModel();
-    cerr << "INFO! Initialization Successfully Finished!!" << endl;
-    return 1;
+    else{
+        cerr << "WARNING! NO configuration file specified." << endl;
+        int result = loadCRTKInterfacefromModel();
+        return 1;
+    }
 }
 
 
 void afCRTKModelPlugin::graphicsUpdate(){
+    if (!m_isInitialized){
+        int result = readConfigFile(m_configPath);
+        if (result == 1){
+            m_isInitialized = true;
+        }
+    }
 }
 
-
 void afCRTKModelPlugin::physicsUpdate(double dt){
-    for (Interface* interface:m_interface){
-        runMeasuredCP(interface);
-        runMeasuredJS(interface);
-        runMeasuredCF(interface);
-        runServoCP(interface);
-        runServoJP(interface);
-        runServoCF(interface);
+    if (m_isInitialized){
+        for (Interface* interface:m_interface){
+            runMeasuredCP(interface);
+            runMeasuredJS(interface);
+            runMeasuredCF(interface);
+            runServoCP(interface);
+            runServoJP(interface);
+            runServoCF(interface);
+        }
     }
 }
 
@@ -174,6 +193,8 @@ int afCRTKModelPlugin::loadCRTKInterfacefromModel(){
         }
         jointNames.clear();
     }
+
+    return 1;
 }
 
 void afCRTKModelPlugin::reset(){

@@ -77,9 +77,9 @@ class Interface{
         // RigidBody Pointers
         vector<afRigidBodyPtr> m_measuredCPRBsPtr, m_measuredCFRBsPtr, m_servoCPRBsPtr, m_servoCFRBsPtr; 
         // Non RigidBody Pointers
-        vector<afBaseObjectPtr> m_measuredObjectPtr, m_servoObjectPtr;
+        vector<afBaseObjectPtr> m_measuredObjectPtr, m_servoObjectPtr, m_measuredReferencePtr, m_servoReferencePtr;
         // Pointer for reference
-        afBaseObjectPtr m_referenceMeasuredPtr, m_referenceServoPtr;
+        afBaseObjectPtr m_referenceMeasuredPtr = nullptr, m_referenceServoPtr = nullptr;
 };
 
 class afCRTKBasePlugin{
