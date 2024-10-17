@@ -11,13 +11,11 @@ interface:
 SRC/needle:
   measured_cp:
     # Name of Rigidbody in AMBF 
-    rigidbody: 
-    - BODY Needle
+    rigidbody: BODY Needle
 
 SRC/psm1:
   measured_cp:
-    rigidbody: 
-    - psm1/BODY tool yaw link
+    rigidbody: psm1/BODY tool yaw link
   measured_js:
     joints:
     - psm1/JOINT pitch end link-main insertion link
@@ -27,8 +25,8 @@ SRC/psm1:
     - psm1/JOINT tool yaw link-tool gripper left link
     - psm1/JOINT tool yaw link-tool gripper right link
   servo_cp:
-    rigidbody: 
-    - psm1/BODY tool yaw link
+    rigidbody: psm1/BODY tool yaw link
+
   servo_jp:
     joints:
     - psm1/JOINT pitch end link-main insertion link
@@ -40,8 +38,7 @@ SRC/psm1:
   
 SRC/psm2:
   measured_cp:
-    rigidbody: 
-    - psm2/BODY tool yaw link
+    rigidbody: psm2/BODY tool yaw link
   measured_js:
     joints:
     - psm2/JOINT pitch end link-main insertion link
@@ -51,8 +48,7 @@ SRC/psm2:
     - psm2/JOINT tool yaw link-tool gripper left link
     - psm2/JOINT tool yaw link-tool gripper right link
   servo_cp:
-    rigidbody: 
-    - psm2/BODY tool yaw link
+    rigidbody: psm2/BODY tool yaw link
   servo_jp:
     joints:
     - psm2/JOINT pitch end link-main insertion link
