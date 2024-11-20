@@ -55,6 +55,7 @@ plugins: [
     path: <plugin_path>/ambf_crtk_model_plugin/build
   }
 ]
+crtk_config: <path_to_your_configuration_file>
 ```
 
 ### 2.3 Object plugin
@@ -67,6 +68,7 @@ plugins: [
     path: <plugin_path>/ambf_crtk_object_plugin/build
   }
 ]
+crtk_config: <path_to_your_configuration_file>
 ```
 
 ## 3. Configuration file
@@ -150,6 +152,11 @@ ambf_simulator --launch_file ../surgical_robotics_challenge/launch.yaml -l 0,1,2
 You can use the following example:
 ```bash
 ambf_simulator -a ../3D-Slicer_ROS_Module_with_AMBF/AMBF_Plugin_3DSlicer/ADF/galen.yaml --plugins ./build/libambf_crtk_simulator_plugin.so --conf example/CRTK_config.yaml 
+```
+
+You can use the following example to use model plugin for dvrk:
+```bash
+ambf_simulator --launch_file launch.yaml -l 0,1,2
 ```
 
 ## Trouble Shooting
