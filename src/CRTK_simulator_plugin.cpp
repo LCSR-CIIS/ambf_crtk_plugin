@@ -76,8 +76,8 @@ int afCRTKSimulatorPlugin::init(int argc, char** argv, const afWorldPtr a_afWorl
     afCRTKBasePlugin::m_worldPtr = a_afWorld;
 
     // Improve the constratint
-    afSimulatorPlugin::m_worldPtr->m_bulletWorld->getSolverInfo().m_erp = 1.0;  
-    afSimulatorPlugin::m_worldPtr->m_bulletWorld->getSolverInfo().m_erp2 = 1.0; 
+    // afSimulatorPlugin::m_worldPtr->m_bulletWorld->getSolverInfo().m_erp = 1.0;  
+    // afSimulatorPlugin::m_worldPtr->m_bulletWorld->getSolverInfo().m_erp2 = 1.0; 
     
     // When config file is defined
     if(!config_filepath.empty()){
