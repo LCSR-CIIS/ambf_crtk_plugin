@@ -1,0 +1,93 @@
+cameras: [cameraL, cameraR]
+bodies:
+- BODY CameraFrame
+
+namespace: /ambf/env/ecm/
+
+BODY CameraFrame:
+  name: CameraFrame
+  mesh: ''
+  plugins: [
+    {
+      name: ambf_object_plugin,
+      path: ../../build/,
+      filename: libambf_crtk_object_plugin.so
+    }
+  ]
+  collision mesh type: ''
+  mass: 0.0
+  inertia:
+    ix: 0.0
+    iy: 0.0
+    iz: 0.0
+  collision margin: 0.001
+  scale: 1.0
+  location:
+    position:
+      x: 0.0229906328
+      y: 0.2875649333
+      z: 0.8483120799
+    orientation:
+      r: 0.3577442467
+      p: -0.0
+      y: -3.1415848732
+  inertial offset:
+    position:
+      x: 0
+      y: 0
+      z: 0
+    orientation:
+      r: 0
+      p: 0
+      y: 0
+  passive: false
+  color: random
+  publish children names: false
+  publish joint names: false
+  publish joint positions: false
+
+# CAMERA COMMON CONFIG
+cam common configs:
+  clipping plane: &cam_common_clipping_plane
+    near: 0.001
+    far: 10.0
+  field of view: &cam_common_fov 1.2 
+  publish image resolution: &cam_common_pub_img_res { width: 640, height: 480 } 
+  publish depth resolution: &cam_common_pub_depth_res { width: 640, height: 480 }
+
+cameraL:
+  namespace: cameras/
+  name: cameraL
+  location: { x: -0.002, y: 0.0, z: -0.05 }
+  look at: { x: 0.0, y: 0.0, z: -1.0 }
+  up: { x: 0.0, y: 1.0, z: 0.0 }
+  clipping plane: *cam_common_clipping_plane
+  field view angle: *cam_common_fov 
+  monitor: 1
+  parent: BODY CameraFrame
+  publish image: True
+  publish image interval: 5
+  publish image resolution: *cam_common_pub_img_res 
+  publish depth: True
+  publish depth resolution: *cam_common_pub_depth_res
+  multipass: True # Set to True to enable shadows
+  mouse control multipliers: { pan: 0.1, rotate: 1.0, scroll: 0.1, arcball: 0.1 }
+
+cameraR:
+  namespace: cameras/
+  name: cameraR
+  location: { x: 0.002, y: 0.0, z: -0.05 }
+  look at: { x: 0.0, y: 0.0, z: -1.0 }
+  up: { x: 0.0, y: 1.0, z: 0.0 }
+  clipping plane: *cam_common_clipping_plane
+  field view angle: *cam_common_fov 
+  monitor: 2
+  parent: BODY CameraFrame
+  publish image: True
+  publish image interval: 5
+  publish image resolution: *cam_common_pub_img_res
+  publish depth: True
+  publish depth resolution: *cam_common_pub_depth_res
+  visible: True
+  mouse control multipliers: { pan: 0.1, rotate: 1.0, scroll: 0.1, arcball: 0.1 }
+  multipass: True
