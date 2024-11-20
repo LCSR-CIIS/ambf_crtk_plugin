@@ -237,11 +237,16 @@ int afCRTKBasePlugin::InitInterface(YAML::Node& node, Interface* interface){
 
 void afCRTKBasePlugin::runMeasuredCP(Interface* interface){
     // measured_cp
+    cTransform referenceMeasuredCP, referenceToMeasuredCP;
     if (interface->m_measuredCPRBsPtr.size() > 0){
         for (size_t i = 0; i < interface->m_measuredCPRBsPtr.size(); i++){
             cTransform measured_cp = interface->m_measuredCPRBsPtr[i]->getLocalTransform();
             if (interface->m_referenceMeasuredPtr){
-                interface->crtkInterface->measured_cp(measured_cp, getNamefromPtr((afBaseObjectPtr)interface->m_measuredCPRBsPtr[i]));
+                referenceMeasuredCP = interface->m_referenceMeasuredPtr->getLocalTransform();
+                referenceMeasuredCP.invert();
+                referenceToMeasuredCP = referenceMeasuredCP * measured_cp;
+                interface->crtkInterface->measured_cp(referenceToMeasuredCP, getNamefromPtr((afBaseObjectPtr)interface->m_measuredCPRBsPtr[i]));
+                
             }
             interface->crtkInterface->measured_cp(measured_cp, "local/" + getNamefromPtr((afBaseObjectPtr)interface->m_measuredCPRBsPtr[i]));
         }
@@ -252,7 +257,10 @@ void afCRTKBasePlugin::runMeasuredCP(Interface* interface){
         for (size_t i = 0; i < interface->m_measuredObjectPtr.size(); i++){
             cTransform measured_cp = interface->m_measuredObjectPtr[i]->getLocalTransform();
             if (interface->m_referenceMeasuredPtr){
-                interface->crtkInterface->measured_cp(measured_cp, getNamefromPtr((afBaseObjectPtr)interface->m_measuredObjectPtr[i]));
+                referenceMeasuredCP = interface->m_referenceMeasuredPtr->getLocalTransform();
+                referenceMeasuredCP.invert();
+                referenceToMeasuredCP = referenceMeasuredCP * measured_cp;
+                interface->crtkInterface->measured_cp(referenceToMeasuredCP, getNamefromPtr((afBaseObjectPtr)interface->m_measuredObjectPtr[i]));
             }
             interface->crtkInterface->measured_cp(measured_cp, "local/" + getNamefromPtr((afBaseObjectPtr)interface->m_measuredObjectPtr[i]));
         }
