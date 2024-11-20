@@ -55,9 +55,9 @@ int afCRTKModelPlugin::init(const afModelPtr a_modelPtr, afModelAttribsPtr a_mod
     m_modelPtr = a_modelPtr;
     m_worldPtr = m_modelPtr->getWorldPtr();     //Ptr to the simulation world
 
-    // Improve the constratint
-    m_worldPtr->m_bulletWorld->getSolverInfo().m_erp = 1.0;  
-    m_worldPtr->m_bulletWorld->getSolverInfo().m_erp2 = 1.0; 
+    // Improve the constratint <- This will make the model unstable
+    // m_worldPtr->m_bulletWorld->getSolverInfo().m_erp = 1.0;  
+    // m_worldPtr->m_bulletWorld->getSolverInfo().m_erp2 = 1.0; 
     
     YAML::Node specificationDataNode = YAML::Load(a_modelAttribs->getSpecificationData().m_rawData);
 

@@ -101,29 +101,41 @@ int afCRTKObjectPlugin::loadCRTKInterfacefromObject(){
 
     m_interface.push_back(new Interface(ns));
 
-    if (m_objectAttribs->m_identificationAttribs.m_objectType == afType::RIGID_BODY){
-        objectName = regex_replace(objectName, regex{" "}, string{"_"});
-        m_interface[0]->crtkInterface->add_measured_cp(objectName);
-        m_interface[0]->crtkInterface->add_servo_cp(objectName);
-        m_interface[0]->m_measuredObjectPtr.push_back(m_objectPtr); 
-        m_interface[0]->m_servoObjectPtr.push_back(m_objectPtr); 
-    }
+    objectName = regex_replace(objectName, regex{" "}, string{"_"});
+    m_interface[0]->crtkInterface->add_measured_cp(objectName);
+    m_interface[0]->crtkInterface->add_servo_cp(objectName);
+    m_interface[0]->m_measuredObjectPtr.push_back(m_objectPtr); 
+    m_interface[0]->m_servoObjectPtr.push_back(m_objectPtr); 
+    
 
-    if (m_objectAttribs->m_identificationAttribs.m_objectType == afType::LIGHT){
-        objectName = regex_replace(objectName, regex{" "}, string{"_"});
-        m_interface[0]->m_measuredObjectPtr.push_back(m_objectPtr);
-        m_interface[0]->m_servoObjectPtr.push_back(m_objectPtr);
-        m_interface[0]->crtkInterface->add_measured_cp(objectName);
-        m_interface[0]->crtkInterface->add_servo_cp(objectName);
-    }
+    // This part is not working
+    // No type defined in the m_identificationAttribs.m_objectType, since it is a baseObjectFrame
+    // if (m_objectAttribs->m_identificationAttribs.m_objectType == afType::RIGID_BODY){
+    //     cerr << "Object Type: RIGIDBODY" << endl;
+    //     objectName = regex_replace(objectName, regex{" "}, string{"_"});
+    //     m_interface[0]->crtkInterface->add_measured_cp(objectName);
+    //     m_interface[0]->crtkInterface->add_servo_cp(objectName);
+    //     m_interface[0]->m_measuredObjectPtr.push_back(m_objectPtr); 
+    //     m_interface[0]->m_servoObjectPtr.push_back(m_objectPtr); 
+    // }
 
-    if (m_objectAttribs->m_identificationAttribs.m_objectType == afType::CAMERA){
-        objectName = regex_replace(objectName, regex{" "}, string{"_"});
-        m_interface[0]->m_measuredObjectPtr.push_back(m_objectPtr);
-        m_interface[0]->m_servoObjectPtr.push_back(m_objectPtr);
-        m_interface[0]->crtkInterface->add_measured_cp(objectName);
-        m_interface[0]->crtkInterface->add_servo_cp(objectName);
-    }
+    // if (m_objectAttribs->m_identificationAttribs.m_objectType == afType::LIGHT){
+    //     cerr << "Object Type: LIGHT" << endl;
+    //     objectName = regex_replace(objectName, regex{" "}, string{"_"});
+    //     m_interface[0]->m_measuredObjectPtr.push_back(m_objectPtr);
+    //     m_interface[0]->m_servoObjectPtr.push_back(m_objectPtr);
+    //     m_interface[0]->crtkInterface->add_measured_cp(objectName);
+    //     m_interface[0]->crtkInterface->add_servo_cp(objectName);
+    // }
+
+    // if (m_objectAttribs->m_identificationAttribs.m_objectType == afType::CAMERA){
+    //     cerr << "Object Type: CAMERA" << endl;
+    //     objectName = regex_replace(objectName, regex{" "}, string{"_"});
+    //     m_interface[0]->m_measuredObjectPtr.push_back(m_objectPtr);
+    //     m_interface[0]->m_servoObjectPtr.push_back(m_objectPtr);
+    //     m_interface[0]->crtkInterface->add_measured_cp(objectName);
+    //     m_interface[0]->crtkInterface->add_servo_cp(objectName);
+    // }
 
     return 1;
 }
