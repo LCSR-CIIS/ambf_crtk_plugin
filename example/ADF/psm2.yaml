@@ -40,10 +40,10 @@ plugins: [
     {
       name: ambf_model_plugin,
       path: ../../build/,
-      filename: libambf_crtk_model_plugin.so
+      filename: libambf_crtk_model_plugin.so,
+      crtk_config: example/plguin-config/model_plugin/psm2_crtkconfig.yaml
     }
 ]
-crtk_config: example/plguin-config/model_plugin/psm2_crtkconfig.yaml
 
 BODY tool id:
   name: tool_id/420006
