@@ -52,12 +52,12 @@ add_definitions(${AMBF_DEFINITIONS})
 
 # For Simulator Plugin
 add_library(ambf_crtk_simulator_plugin SHARED
-    src/CRTK_base_plugin.cpp
-    src/CRTK_base_plugin.h
-    src/CRTK_simulator_plugin.cpp
-    src/CRTK_simulator_plugin.h
-    src/afCRTKInterface.cpp
-    src/afCRTKInterface.h
+    src/utils/afCRTKInterface.cpp
+    src/utils/afCRTKInterface.h
+    src/utils/CRTK_base_plugin.cpp
+    src/utils/CRTK_base_plugin.h
+    src/simulator_plugin/CRTK_simulator_plugin.cpp
+    src/simulator_plugin/CRTK_simulator_plugin.h
     )
 
 target_link_libraries (ambf_crtk_simulator_plugin ${Boost_LIBRARIES} ${AMBF_LIBRARIES})
@@ -66,24 +66,24 @@ set_property(TARGET ambf_crtk_simulator_plugin PROPERTY POSITION_INDEPENDENT_COD
 
 # Model Plugin
 add_library(ambf_crtk_model_plugin SHARED
-    src/CRTK_base_plugin.cpp
-    src/CRTK_base_plugin.h
-    src/CRTK_model_plugin.cpp
-    src/CRTK_model_plugin.h
-    src/afCRTKInterface.cpp
-    src/afCRTKInterface.h
+    src/utils/afCRTKInterface.cpp
+    src/utils/afCRTKInterface.h
+    src/utils/CRTK_base_plugin.cpp
+    src/utils/CRTK_base_plugin.h
+    src/model_plugin/CRTK_model_plugin.cpp
+    src/model_plugin/CRTK_model_plugin.h
     )
 target_link_libraries (ambf_crtk_model_plugin ${Boost_LIBRARIES} ${AMBF_LIBRARIES})
 set_property(TARGET ambf_crtk_model_plugin PROPERTY POSITION_INDEPENDENT_CODE TRUE)
 
 # Object Plugins
 add_library(ambf_crtk_object_plugin SHARED
-    src/CRTK_base_plugin.cpp
-    src/CRTK_base_plugin.h    
-    src/CRTK_object_plugin.cpp
-    src/CRTK_object_plugin.h
-    src/afCRTKInterface.cpp
-    src/afCRTKInterface.h
+    src/utils/afCRTKInterface.cpp
+    src/utils/afCRTKInterface.h
+    src/utils/CRTK_base_plugin.cpp
+    src/utils/CRTK_base_plugin.h   
+    src/object_plugin/CRTK_object_plugin.cpp
+    src/object_plugin/CRTK_object_plugin.h
     )
 
 target_link_libraries (ambf_crtk_object_plugin ${Boost_LIBRARIES} ${AMBF_LIBRARIES})
