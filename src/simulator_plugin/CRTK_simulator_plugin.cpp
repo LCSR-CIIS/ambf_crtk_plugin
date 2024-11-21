@@ -103,6 +103,7 @@ void afCRTKSimulatorPlugin::graphicsUpdate(){
 void afCRTKSimulatorPlugin::physicsUpdate(double dt){
     // Loop for all the interface
     for (Interface* interface:m_interface){
+        runOperatingState(interface);
         runMeasuredCP(interface);
         runMeasuredJS(interface);
         runMeasuredCF(interface);

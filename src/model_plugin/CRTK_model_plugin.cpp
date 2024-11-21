@@ -90,6 +90,7 @@ void afCRTKModelPlugin::graphicsUpdate(){
 void afCRTKModelPlugin::physicsUpdate(double dt){
     if (m_isInitialized){
         for (Interface* interface:m_interface){
+            runOperatingState(interface);
             runMeasuredCP(interface);
             runMeasuredJS(interface);
             runMeasuredCF(interface);

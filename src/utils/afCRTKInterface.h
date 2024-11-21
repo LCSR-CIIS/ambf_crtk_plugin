@@ -54,6 +54,8 @@
 #include <afFramework.h>
 #include <ambf_server/RosComBase.h>
 
+#include <crtk_msgs/OperatingState.h>
+
 
 
 using namespace chai3d;
@@ -66,6 +68,7 @@ public:
 
     void init(string a_namespace);
     void add_allInterface(string a_namespace);
+    void add_operating_state(string a_namespace);
     void add_measured_cp(string a_namespace);
     void add_measured_js(string a_namespace, vector<string> jointName);
     void add_measured_cf(string a_namespace);
@@ -82,6 +85,7 @@ public:
     void servo_CFCallback(geometry_msgs::WrenchStampedConstPtr);
 
     // Query Command
+    void run_operating_state();
     void measured_cp(cTransform &trans, string name = "default");
     void measured_js(vector<double>& q);
     void measured_cf(vector<double>& force, string name = "default");
@@ -102,6 +106,7 @@ private:
     map<string, ros::Subscriber> m_servoCFSubMap;
 
     // Publishers
+    ros::Publisher m_operatingStatePub;
     ros::Publisher m_measuredCPPub;
     ros::Publisher m_measuredJSPub;
     ros::Publisher m_measuredCFPub;
@@ -121,6 +126,7 @@ private:
     vector<double> m_servo_jp;
     vector<double> m_servo_cf = vector<double>(6);
 
+    crtk_msgs::OperatingState m_operatingState;
     geometry_msgs::PoseStamped m_measured_cp;
     sensor_msgs::JointState m_measured_js;
     geometry_msgs::WrenchStamped m_measured_cf;

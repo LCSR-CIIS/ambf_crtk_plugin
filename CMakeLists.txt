@@ -42,10 +42,15 @@ set(CMAKE_CXX_STANDARD 11)
 
 find_package(AMBF)
 find_package(Boost COMPONENTS program_options filesystem)
+find_package(catkin REQUIRED COMPONENTS
+  crtk_msgs
+)
 
 include_directories(${AMBF_INCLUDE_DIRS})
 include_directories(${Boost_INCLUDE_DIRS})
-
+include_directories(
+  ${catkin_INCLUDE_DIRS}
+)
 
 link_directories(${AMBF_LIBRARY_DIRS})
 add_definitions(${AMBF_DEFINITIONS})
@@ -60,7 +65,7 @@ add_library(ambf_crtk_simulator_plugin SHARED
     src/simulator_plugin/CRTK_simulator_plugin.h
     )
 
-target_link_libraries (ambf_crtk_simulator_plugin ${Boost_LIBRARIES} ${AMBF_LIBRARIES})
+target_link_libraries (ambf_crtk_simulator_plugin ${Boost_LIBRARIES} ${AMBF_LIBRARIES} ${catkin_INCLUDE_DIRS})
 set_property(TARGET ambf_crtk_simulator_plugin PROPERTY POSITION_INDEPENDENT_CODE TRUE)
 
 
@@ -73,7 +78,7 @@ add_library(ambf_crtk_model_plugin SHARED
     src/model_plugin/CRTK_model_plugin.cpp
     src/model_plugin/CRTK_model_plugin.h
     )
-target_link_libraries (ambf_crtk_model_plugin ${Boost_LIBRARIES} ${AMBF_LIBRARIES})
+target_link_libraries (ambf_crtk_model_plugin ${Boost_LIBRARIES} ${AMBF_LIBRARIES} ${catkin_INCLUDE_DIRS})
 set_property(TARGET ambf_crtk_model_plugin PROPERTY POSITION_INDEPENDENT_CODE TRUE)
 
 # Object Plugins
@@ -86,7 +91,7 @@ add_library(ambf_crtk_object_plugin SHARED
     src/object_plugin/CRTK_object_plugin.h
     )
 
-target_link_libraries (ambf_crtk_object_plugin ${Boost_LIBRARIES} ${AMBF_LIBRARIES})
+target_link_libraries (ambf_crtk_object_plugin ${Boost_LIBRARIES} ${AMBF_LIBRARIES} ${catkin_INCLUDE_DIRS})
 set_property(TARGET ambf_crtk_object_plugin PROPERTY POSITION_INDEPENDENT_CODE TRUE)
 
 if(NOT BUILD_PLUGIN_WITH_ROS)

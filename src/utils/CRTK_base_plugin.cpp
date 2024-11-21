@@ -69,6 +69,8 @@ int afCRTKBasePlugin::readConfigFile(string config_filepath){
 }
 
 int afCRTKBasePlugin::InitInterface(YAML::Node& node, Interface* interface){
+    // Add operating state
+    interface->crtkInterface->add_operating_state(interface->m_name);
     
     if (node[interface->m_name]["measured_cp"]){
         for (size_t i = 0; i < node[interface->m_name]["measured_cp"].size(); i++){
@@ -239,6 +241,11 @@ int afCRTKBasePlugin::InitInterface(YAML::Node& node, Interface* interface){
     cerr << "Successfully initialized interface" << endl;
     return 1;
 
+}
+
+
+void afCRTKBasePlugin::runOperatingState(Interface* interface){
+    interface->crtkInterface->run_operating_state();
 }
 
 void afCRTKBasePlugin::runMeasuredCP(Interface* interface){

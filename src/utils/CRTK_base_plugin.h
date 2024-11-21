@@ -89,6 +89,7 @@ class afCRTKBasePlugin{
     protected:
         int readConfigFile(string config_filepath);
         int InitInterface(YAML::Node& node, Interface* interface);
+        void runOperatingState(Interface* interface);   
         void runMeasuredCP(Interface* interface);
         void runMeasuredJS(Interface* interface);
         void runMeasuredCF(Interface* interface);

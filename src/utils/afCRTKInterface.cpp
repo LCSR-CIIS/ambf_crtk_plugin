@@ -68,6 +68,17 @@ void afCRTKInterface::add_allInterface(string a_namespace){
     m_servoCFSub = m_rosNode->subscribe(m_nameSpace + "/servo_cf", 1 , &afCRTKInterface::servo_CFCallback, this);
 }
 
+void afCRTKInterface::add_operating_state(string a_namespace){
+    string baseName;
+    if(a_namespace == ""){
+        baseName = m_nameSpace;
+    }
+    else{
+        baseName = m_nameSpace + "/" + a_namespace;
+    }
+    m_operatingStatePub = m_rosNode->advertise<crtk_msgs::OperatingState>(baseName + "/operating_state", 1);
+}
+
 
 void afCRTKInterface::add_measured_cp(string a_namespace){
     string baseName;
@@ -202,6 +213,13 @@ bool afCRTKInterface::servo_jp(vector<double> & jp){
 bool afCRTKInterface::servo_cf(vector<double> & cf){
     cf = m_servo_cf;
     return m_is_servo_cf;
+}
+
+void afCRTKInterface::run_operating_state(){
+    m_operatingState.state = "ENABLED";
+    m_operatingState.is_homed = false;
+    m_operatingState.is_busy = false;
+    m_operatingStatePub.publish(m_operatingState);
 }
 
 

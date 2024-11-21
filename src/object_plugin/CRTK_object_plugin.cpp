@@ -67,6 +67,9 @@ void afCRTKObjectPlugin::graphicsUpdate(){
 
 
 void afCRTKObjectPlugin::physicsUpdate(double dt){
+    // // operating_state
+    // runOperatingState(m_interface[0]);
+
     // measured_cp
     if (m_interface[0]->m_measuredObjectPtr.size() > 0){
         for (size_t i = 0; i < m_interface[0]->m_measuredObjectPtr.size(); i++){
