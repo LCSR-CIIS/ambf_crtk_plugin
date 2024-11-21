@@ -45,32 +45,35 @@
 // To silence warnings on MacOS
 #define GL_SILENCE_DEPRECATION
 #include <afFramework.h>
-#include "afCRTKInterface.h"
-
-#include <regex>
 #include <boost/algorithm/string.hpp>
+#include <regex>
 
-#include "CRTK_base_plugin.h"
+#include "../utils/afCRTKInterface.h"
+#include "../utils/CRTK_base_plugin.h"
 
 using namespace std;
 using namespace ambf;
 
-
-class afCRTKObjectPlugin: public afObjectPlugin, public afCRTKBasePlugin{
+class afCRTKModelPlugin: public afModelPlugin, public afCRTKBasePlugin{
     public:
-        afCRTKObjectPlugin();
-        virtual int init(const afBaseObjectPtr a_objectPtr, afBaseObjectAttribsPtr a_attribs) override;
+        afCRTKModelPlugin();
+        virtual int init(const afModelPtr a_modelPtr, afModelAttribsPtr a_modelAttribs) override;
         virtual void graphicsUpdate() override;
         virtual void physicsUpdate(double dt) override;
         virtual void reset() override;
         virtual bool close() override;
 
     protected:
+        int loadCRTKInterfacefromModel();
     // private:
-        int loadCRTKInterfacefromObject();
-        afBaseObjectPtr m_objectPtr;
-        afBaseObjectAttribsPtr m_objectAttribs;
+        // Pointer to the world
+        afModelPtr m_modelPtr;
+        string m_configPath;
+
+        bool m_isInitialized = false;
+
+        map<string, Interface*> m_namespaces;
 };
 
 
-AF_REGISTER_OBJECT_PLUGIN(afCRTKObjectPlugin)
+AF_REGISTER_MODEL_PLUGIN(afCRTKModelPlugin)

@@ -62,8 +62,8 @@ int afCRTKModelPlugin::init(const afModelPtr a_modelPtr, afModelAttribsPtr a_mod
     YAML::Node specificationDataNode = YAML::Load(a_modelAttribs->getSpecificationData().m_rawData);
 
     // If there is a configuration file given in the ADF file
-    if (specificationDataNode["crtk_config"]){
-        m_configPath = specificationDataNode["crtk_config"].as<string>();
+    if (specificationDataNode["plugins"][0]["crtk_config"]){
+        m_configPath = specificationDataNode["plugins"][0]["crtk_config"].as<string>();
         cerr << "[INFO!] Reading configuration file: " << m_configPath << endl;
         // return readConfigFile(m_configPath);
         return 1;

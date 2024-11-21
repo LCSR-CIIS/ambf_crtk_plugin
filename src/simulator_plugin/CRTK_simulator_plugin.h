@@ -36,7 +36,7 @@
 
     \author    <hishida3@jhu.edu>
     \author    Hisashi Ishida
-    \date      03.21.2024
+    \date      01.10.2024
     
 */
 //==============================================================================
@@ -45,36 +45,42 @@
 // To silence warnings on MacOS
 #define GL_SILENCE_DEPRECATION
 #include <afFramework.h>
-#include "afCRTKInterface.h"
-
-#include <boost/algorithm/string.hpp>
+#include <yaml-cpp/yaml.h>
 #include <regex>
-#include "CRTK_base_plugin.h"
+#include <boost/program_options.hpp>
+#include <boost/algorithm/string.hpp>
 
+#include "../utils/afCRTKInterface.h"
+#include "../utils/CRTK_base_plugin.h"
+
+namespace boost{
+    namespace program_options{
+        class variables_map;
+    }
+}
+
+namespace p_opt = boost::program_options;
 
 using namespace std;
 using namespace ambf;
 
-class afCRTKModelPlugin: public afModelPlugin, public afCRTKBasePlugin{
+
+class afCRTKSimulatorPlugin: public afSimulatorPlugin, public afCRTKBasePlugin{
     public:
-        afCRTKModelPlugin();
-        virtual int init(const afModelPtr a_modelPtr, afModelAttribsPtr a_modelAttribs) override;
+        afCRTKSimulatorPlugin();
+        virtual int init(int argc, char** argv, const afWorldPtr a_afWorld) override;
+        virtual void keyboardUpdate(GLFWwindow* a_window, int a_key, int a_scancode, int a_action, int a_mods) override;
         virtual void graphicsUpdate() override;
         virtual void physicsUpdate(double dt) override;
         virtual void reset() override;
         virtual bool close() override;
 
     protected:
-        int loadCRTKInterfacefromModel();
-    // private:
-        // Pointer to the world
-        afModelPtr m_modelPtr;
-        string m_configPath;
-
-        bool m_isInitialized = false;
-
+        int loadCRTKInterfaceFromSimulator();
+        string m_current_filepath;
         map<string, Interface*> m_namespaces;
+        
 };
 
 
-AF_REGISTER_MODEL_PLUGIN(afCRTKModelPlugin)
+AF_REGISTER_SIMULATOR_PLUGIN(afCRTKSimulatorPlugin)
