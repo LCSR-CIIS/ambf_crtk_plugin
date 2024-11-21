@@ -7,10 +7,12 @@ interface:
 - psm2
 
 psm2:
-  measured_cp:
-    rigidbody: psm2/BODY tool yaw link
-    reference: CameraFrame
-
+  measured_cp: [
+    {
+      rigidbody: psm2/BODY tool yaw link,
+      reference: CameraFrame
+    },
+  ]
   measured_js:
     joints:
     - psm2/JOINT pitch end link-main insertion link
@@ -19,8 +21,13 @@ psm2:
     - psm2/JOINT tool pitch link-tool yaw link
     - psm2/JOINT tool yaw link-tool gripper left link
     - psm2/JOINT tool yaw link-tool gripper right link
+
   servo_cp:
-    rigidbody: psm2/BODY tool yaw link
+  [
+    {
+      rigidbody: psm2/BODY tool yaw link
+    }
+  ]
 
   servo_jp:
     joints:

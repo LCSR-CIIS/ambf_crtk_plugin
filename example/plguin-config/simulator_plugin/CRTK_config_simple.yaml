@@ -11,14 +11,16 @@ interface:
 
 # For Interface "REMS/Research"
 REMS/Research:
-  measured_cp:
-    # Additonal namespace
-    # rostopic name will be "REMS/Research/delta/measured_cp" 
-    namespace: delta
+  measured_cp: [
+    {
+      # Additonal namespace
+      # rostopic name will be "REMS/Research/delta/measured_cp" 
+      namespace: delta,
 
-    # Name of Rigidbody in AMBF 
-    rigidbody: Endoscope Tip
-
+      # Name of Rigidbody in AMBF 
+      rigidbody: Endoscope Tip
+    },
+  ]
   measured_js:
     # Name of joints in AMBF
     joints:
@@ -29,5 +31,10 @@ REMS/Research:
 
 
   measured_cf:
-    # Name of Rigidbody in AMBF 
-    rigidbody: Endoscope Tip
+  [
+    {
+      # Name of Rigidbody in AMBF 
+      rigidbody: Endoscope Tip  
+    }
+  ]
+    

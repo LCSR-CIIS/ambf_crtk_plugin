@@ -71,41 +71,44 @@ int afCRTKBasePlugin::readConfigFile(string config_filepath){
 int afCRTKBasePlugin::InitInterface(YAML::Node& node, Interface* interface){
     
     if (node[interface->m_name]["measured_cp"]){
-        if(node[interface->m_name]["measured_cp"]["rigidbody"]){
-            cerr << "[INFO!] Adding measured_cp ... " << endl;
-            if (node[interface->m_name]["measured_cp"]["reference"]){
-                string objectName = node[interface->m_name]["measured_cp"]["reference"].as<string>();
-                interface->m_referenceMeasuredPtr = (afBaseObjectPtr)m_worldPtr->getRigidBody(objectName);
+        for (size_t i = 0; i < node[interface->m_name]["measured_cp"].size(); i++){
+            if(node[interface->m_name]["measured_cp"][i]["rigidbody"]){
+                cerr << "[INFO!] Adding measured_cp ... " << endl;
+                if (node[interface->m_name]["measured_cp"][i]["reference"]){
+                    string objectName = node[interface->m_name]["measured_cp"][i]["reference"].as<string>();
+                    interface->m_referenceMeasuredPtr = (afBaseObjectPtr)m_worldPtr->getRigidBody(objectName);
+                }
+
+                string rigidName = node[interface->m_name]["measured_cp"][i]["rigidbody"].as<string>();
+                afRigidBodyPtr rigidBodyPtr = m_worldPtr->getRigidBody(rigidName);
+
+                if(!rigidBodyPtr){
+                    cerr << ">> ERROR!! No RigidBody Named " << node[interface->m_name]["measured_cp"][i]["rigidbody"].as<string>() << " for measured_cp" << endl;
+                    return -1;
+                }
+                interface->m_measuredCPRBsPtr.push_back(rigidBodyPtr);
+                rigidName = getNamefromPtr((afBaseObjectPtr)rigidBodyPtr);
+                
+                if(node[interface->m_name]["measured_cp"][i]["namespace"]){
+                    if (interface->m_referenceMeasuredPtr){
+                        interface->crtkInterface->add_measured_cp(node[interface->m_name]["measured_cp"][i]["namespace"].as<string>() + rigidName);
+                    }
+                    interface->crtkInterface->add_measured_cp(node[interface->m_name]["measured_cp"][i]["namespace"].as<string>() + "/local/" + rigidName);
+                }
+                else{
+                    if (interface->m_referenceMeasuredPtr){
+                        interface->crtkInterface->add_measured_cp(rigidName); 
+                    }
+                    interface->crtkInterface->add_measured_cp("local/" +rigidName); 
+                }
             }
 
-            string rigidName = node[interface->m_name]["measured_cp"]["rigidbody"].as<string>();
-            afRigidBodyPtr rigidBodyPtr = m_worldPtr->getRigidBody(rigidName);
-
-            if(!rigidBodyPtr){
-                cerr << ">> ERROR!! No RigidBody Named " << node[interface->m_name]["measured_cp"]["rigidbody"].as<string>() << " for measured_cp" << endl;
+            else{  
+                cerr << ">> ERROR!! No RigidBody specified for measured_cp" << endl;
                 return -1;
             }
-            interface->m_measuredCPRBsPtr.push_back(rigidBodyPtr);
-            rigidName = getNamefromPtr((afBaseObjectPtr)rigidBodyPtr);
-            
-            if(node[interface->m_name]["measured_cp"]["namespace"]){
-                if (interface->m_referenceMeasuredPtr){
-                    interface->crtkInterface->add_measured_cp(node[interface->m_name]["measured_cp"]["namespace"].as<string>() + rigidName);
-                }
-                interface->crtkInterface->add_measured_cp(node[interface->m_name]["measured_cp"]["namespace"].as<string>() + "/local/" + rigidName);
-            }
-            else{
-                if (interface->m_referenceMeasuredPtr){
-                    interface->crtkInterface->add_measured_cp(rigidName); 
-                }
-                interface->crtkInterface->add_measured_cp("local/" +rigidName); 
-            }
         }
-
-        else{  
-            cerr << ">> ERROR!! No RigidBody specified for measured_cp" << endl;
-            return -1;
-        }
+        
     }
     if (node[interface->m_name]["measured_js"]){
         vector<string> jointNames;
@@ -125,19 +128,19 @@ int afCRTKBasePlugin::InitInterface(YAML::Node& node, Interface* interface){
     if (node[interface->m_name]["measured_cf"]){
         if(node[interface->m_name]["measured_cf"]["rigidbody"]){
             cerr << "[INFO!] Adding measured_cf ... " << endl;
-            for (int j = 0; j < node[interface->m_name]["measured_cf"]["rigidbody"].size(); j++){
-                string rigidName = node[interface->m_name]["measured_cf"]["rigidbody"][j].as<string>();
+            for (int j = 0; j < node[interface->m_name]["measured_cf"].size(); j++){
+                string rigidName = node[interface->m_name]["measured_cf"][j]["rigidbody"].as<string>();
                 afRigidBodyPtr rigidBodyPtr = m_worldPtr->getRigidBody(rigidName);                
                 
                 if(!rigidBodyPtr){
-                    cerr << ">> ERROR!! No RigidBody Named " << node[interface->m_name]["measured_cf"]["rigidbody"][j].as<string>() << " for measured_cf" << endl;
+                    cerr << ">> ERROR!! No RigidBody Named " << node[interface->m_name]["measured_cf"][j]["rigidbody"].as<string>() << " for measured_cf" << endl;
                     return -1;
                 }
                 interface->m_measuredCFRBsPtr.push_back(rigidBodyPtr);
                 rigidName = getNamefromPtr((afBaseObjectPtr)rigidBodyPtr);
 
                 if(node[interface->m_name]["measured_cf"]["namespace"]){
-                    interface->crtkInterface->add_measured_cf(node[interface->m_name]["measured_cf"]["namespace"][j].as<string>()+ '/' + rigidName);
+                    interface->crtkInterface->add_measured_cf(node[interface->m_name]["measured_cf"][j]["namespace"].as<string>()+ '/' + rigidName);
                 }
                 else{
                     interface->crtkInterface->add_measured_cf(rigidName);                    
@@ -152,41 +155,44 @@ int afCRTKBasePlugin::InitInterface(YAML::Node& node, Interface* interface){
     }
 
     if (node[interface->m_name]["servo_cp"]){
-        if(node[interface->m_name]["servo_cp"]["rigidbody"]){
-            cerr << "[INFO!] Adding servo_cp ... " << endl;
-            if (node[interface->m_name]["servo_cp"]["reference"]){
-                string objectName = node[interface->m_name]["servo_cp"]["reference"].as<string>();
-                interface->m_referenceServoPtr =  (afBaseObjectPtr)m_worldPtr->getRigidBody(objectName);
+        for (size_t i = 0; i < node[interface->m_name]["servo_cp"].size(); i++){
+            if(node[interface->m_name]["servo_cp"][i]["rigidbody"]){
+                cerr << "[INFO!] Adding servo_cp ... " << endl;
+                if (node[interface->m_name]["servo_cp"][i]["reference"]){
+                    string objectName = node[interface->m_name]["servo_cp"][i]["reference"].as<string>();
+                    interface->m_referenceServoPtr =  (afBaseObjectPtr)m_worldPtr->getRigidBody(objectName);
+                }
+                string rigidName = node[interface->m_name]["servo_cp"][i]["rigidbody"].as<string>();
+                afRigidBodyPtr rigidBodyPtr = m_worldPtr->getRigidBody(rigidName);
+                if(!rigidBodyPtr){
+                    cerr << ">> ERROR!! No RigidBody Named " << node[interface->m_name]["servo_cp"][i]["rigidbody"].as<string>() << " for servo_cp" << endl;
+                    return -1;
+                }
+
+                interface->m_servoCPRBsPtr.push_back(rigidBodyPtr);
+            
+                rigidName = getNamefromPtr((afBaseObjectPtr)rigidBodyPtr);
+
+                if(node[interface->m_name]["servo_cp"][i]["namespace"]){
+                    if (interface->m_referenceServoPtr){
+                        interface->crtkInterface->add_servo_cp(node[interface->m_name]["servo_cp"][i]["rigidbody"]["namespace"].as<string>() + "/" + rigidName);
+                    }
+                    interface->crtkInterface->add_servo_cp(node[interface->m_name]["servo_cp"][i]["rigidbody"]["namespace"].as<string>() + "/local/" + rigidName);
+                }
+                else{
+                    if (interface->m_referenceServoPtr){
+                        interface->crtkInterface->add_servo_cp(rigidName);
+                    }
+                    interface->crtkInterface->add_servo_cp("local/" + rigidName);
+                }
             }
-            string rigidName = node[interface->m_name]["servo_cp"]["rigidbody"].as<string>();
-            afRigidBodyPtr rigidBodyPtr = m_worldPtr->getRigidBody(rigidName);
-            if(!rigidBodyPtr){
-                cerr << ">> ERROR!! No RigidBody Named " << node[interface->m_name]["servo_cp"]["rigidbody"].as<string>() << " for servo_cp" << endl;
+
+            else{  
+                cerr << ">> ERROR!! No RigidBody specified for servo_cp" << endl;
                 return -1;
             }
-
-            interface->m_servoCPRBsPtr.push_back(rigidBodyPtr);
-        
-            rigidName = getNamefromPtr((afBaseObjectPtr)rigidBodyPtr);
-
-            if(node[interface->m_name]["servo_cp"]["namespace"]){
-                if (interface->m_referenceServoPtr){
-                    interface->crtkInterface->add_servo_cp(node[interface->m_name]["servo_cp"]["rigidbody"]["namespace"].as<string>() + "/" + rigidName);
-                }
-                interface->crtkInterface->add_servo_cp(node[interface->m_name]["servo_cp"]["rigidbody"]["namespace"].as<string>() + "/local/" + rigidName);
-            }
-            else{
-                if (interface->m_referenceServoPtr){
-                    interface->crtkInterface->add_servo_cp(rigidName);
-                }
-                interface->crtkInterface->add_servo_cp("local/" + rigidName);
-            }
         }
 
-        else{  
-            cerr << ">> ERROR!! No RigidBody specified for servo_cp" << endl;
-            return -1;
-        }
     }
 
     if (node[interface->m_name]["servo_jp"]){
@@ -207,18 +213,18 @@ int afCRTKBasePlugin::InitInterface(YAML::Node& node, Interface* interface){
     if (node[interface->m_name]["servo_cf"]){
         if(node[interface->m_name]["servo_cf"]["rigidbody"]){
             cerr << "[INFO!] Adding servo_cf ... " << endl;
-            for (int j = 0; j < node[interface->m_name]["servo_cf"]["rigidbody"].size(); j++){
-                string rigidName = node[interface->m_name]["servo_cf"]["rigidbody"].as<string>();
+            for (int j = 0; j < node[interface->m_name]["servo_cf"].size(); j++){
+                string rigidName = node[interface->m_name]["servo_cf"][j]["rigidbody"].as<string>();
                 afRigidBodyPtr rigidBodyPtr = m_worldPtr->getRigidBody(rigidName);
                 if(!rigidBodyPtr){
-                    cerr << ">> ERROR!! No RigidBody Named " << node[interface->m_name]["servo_cf"]["rigidbody"].as<string>() << " for servo_cf" << endl;
+                    cerr << ">> ERROR!! No RigidBody Named " << node[interface->m_name]["servo_cf"][j]["rigidbody"].as<string>() << " for servo_cf" << endl;
                     return -1;
                 }
                 interface->m_servoCFRBsPtr.push_back(rigidBodyPtr);
                 
                 rigidName = getNamefromPtr((afBaseObjectPtr)rigidBodyPtr);
                 if(node[interface->m_name]["servo_cf"]["namespace"])
-                    interface->crtkInterface->add_servo_cf(node[interface->m_name]["servo_cf"]["namespace"].as<string>() + '/' + rigidName);
+                    interface->crtkInterface->add_servo_cf(node[interface->m_name]["servo_cf"][j]["namespace"].as<string>() + '/' + rigidName);
                 else
                     interface->crtkInterface->add_servo_cf(rigidName);
             }
