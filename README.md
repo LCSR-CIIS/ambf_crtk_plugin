@@ -23,6 +23,12 @@ cd <catkin_ws>
 catkin build ambf_crtk_plugin
 ```
 
+### 1.3 Source crtk_msgs
+Follow the instruction in [crtk_msgs](https://github.com/collaborative-robotics/crtk_msgs) and don't forget to source it.
+```bash
+source catkin_ws/devel/setup.bash
+```
+
 ## 2. How to use your plugin
 You can test this plugin on the example by:
 `<ambf_exe_dir> ---> e.g. ~/ambf/bin/lin-x86_64`
