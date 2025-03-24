@@ -35,7 +35,7 @@
 #
 #  $Author: Hisashi Ishida $
 
-cmake_minimum_required (VERSION 3.1)
+cmake_minimum_required (VERSION 3.3)
 project (ambf_crtk_plugin)
 
 set(CMAKE_CXX_STANDARD 11)
@@ -43,7 +43,7 @@ set(CMAKE_CXX_STANDARD 11)
 find_package(AMBF)
 find_package(Boost COMPONENTS program_options filesystem)
 
-set (ROS1_depends ambf_server cv_bridge image_transport)
+set (ROS1_depends ambf_server)
 find_package (catkin QUIET
   COMPONENTS ${ROS1_depends})
 
@@ -107,6 +107,7 @@ add_library(ambf_crtk_model_plugin SHARED
     src/model_plugin/CRTK_model_plugin.cpp
     src/model_plugin/CRTK_model_plugin.h
     )
+
 # Object Plugins
 add_library(ambf_crtk_object_plugin SHARED
     src/utils/afCRTKInterface.cpp
@@ -120,7 +121,7 @@ add_library(ambf_crtk_object_plugin SHARED
 set (ROS_CRTK_PLUGINS ambf_crtk_simulator_plugin ambf_crtk_model_plugin ambf_crtk_object_plugin )
 if (ROS_VERSION EQUAL 1)
 
-  foreach (_plugin ${ROS_COMM_PLUGINS})
+  foreach (_plugin ${ROS_CRTK_PLUGINS})
     add_dependencies (${_plugin} ${catkin_EXPORTED_TARGETS})
     target_link_libraries (${_plugin} ${catkin_LIBRARIES} ${AMBF_LIBRARIES})
   endforeach ()
@@ -128,13 +129,15 @@ if (ROS_VERSION EQUAL 1)
 else ()
 
   install (
-    TARGETS ${ROS_COMM_PLUGINS}
+    TARGETS ${ROS_CRTK_PLUGINS}
     LIBRARY DESTINATION lib
     ARCHIVE DESTINATION lib
     RUNTIME DESTINATION bin
     )
 
-  foreach (_plugin ${ROS_COMM_PLUGINS})
+  foreach (_plugin ${ROS_CRTK_PLUGINS})
     ament_target_dependencies (${_plugin} ambf_server ${ROS2_depends})
   endforeach ()
   ament_package ()
+
+endif()

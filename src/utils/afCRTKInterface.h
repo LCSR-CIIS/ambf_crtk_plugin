@@ -45,17 +45,29 @@
 #ifndef AFCRTK_INTERFACE_H
 #define AFCRTK_INTERFACE_H
 
-#include <ros/ros.h>
-#include <geometry_msgs/PoseStamped.h>
-#include <geometry_msgs/WrenchStamped.h>
-#include <sensor_msgs/JointState.h>
+
 #include <math/CTransform.h>
 
 #include <afFramework.h>
-// #include <ambf_server/RosComBase.h>
+
+// #if AMBF_ROS1
+// #include <ros/ros.h>
+// #include <geometry_msgs/PoseStamped.h>
+// #include <geometry_msgs/WrenchStamped.h>
+// #include <sensor_msgs/JointState.h>
+
+// #elif AMBF_ROS2
+#include <rclcpp/rclcpp.hpp>
+// #include "ros/callback_queue.h" # find ROS2 equivalency
+#include "geometry_msgs/msg/pose_stamped.hpp"
+#include "geometry_msgs/msg/wrench_stamped.hpp"
+#include "sensor_msgs/msg/joint_state.hpp"
+
+#include "crtk_msgs/msg/operating_state.h"
 #include <ambf_server/ambf_ral.h>
 
-#include <crtk_msgs/OperatingState.h>
+// #endif
+// #include <ambf_server/RosComBase.h>
 
 
 
@@ -82,9 +94,9 @@ public:
     ambf_ral::node_ptr_t m_rosNode;
 
     // Callback functions
-    void servo_CPCallback(geometry_msgs::PoseStampedConstPtr);
-    void servo_JPCallback(sensor_msgs::JointStateConstPtr);
-    void servo_CFCallback(geometry_msgs::WrenchStampedConstPtr);
+    void servo_CPCallback(AMBF_RAL_MSG_PTR(geometry_msgs, PoseStamped)); 
+    void servo_JPCallback(AMBF_RAL_MSG_PTR(sensor_msgs, JointState));
+    void servo_CFCallback(AMBF_RAL_MSG_PTR(geometry_msgs, WrenchStamped));
 
     // Query Command
     void run_operating_state();
@@ -99,24 +111,57 @@ public:
 
 
 private:
-    // Subscribers
-    ros::Subscriber m_servoCPSub;
-    ros::Subscriber m_servoJPSub;
-    ros::Subscriber m_servoCFSub;
 
-    map<string, ros::Subscriber> m_servoCPSubMap;
-    map<string, ros::Subscriber> m_servoCFSubMap;
+    #if AMBF_ROS1
+        // Subscribers
+        ros::Subscriber m_servoCPSub;
+        ros::Subscriber m_servoJPSub;
+        ros::Subscriber m_servoCFSub;
 
-    // Publishers
-    ros::Publisher m_operatingStatePub;
-    ros::Publisher m_measuredCPPub;
-    ros::Publisher m_measuredJSPub;
-    ros::Publisher m_measuredCFPub;
-    ros::Publisher m_statePub;
+        map<string, ros::Subscriber> m_servoCPSubMap;
+        map<string, ros::Subscriber> m_servoCFSubMap;
 
-    map<string, ros::Publisher> m_measuredCPPubMap;
-    map<string, ros::Publisher> m_measuredCFPubMap;
+        // Publishers
+        ros::Publisher m_operatingStatePub;
+        ros::Publisher m_measuredCPPub;
+        ros::Publisher m_measuredJSPub;
+        ros::Publisher m_measuredCFPub;
 
+        map<string, ros::Publisher> m_measuredCPPubMap;
+        map<string, ros::Publisher> m_measuredCFPubMap;
+
+    #elif AMBF_ROS2
+        // Subscribers
+        typedef typename rclcpp::Subscriber<geomerty_msgs::msg::pose_stamped> subscriber_servoCP_t;
+        typename subscriber_servoCP_t::SharedPtr m_servoCPSub;
+
+        typedef typename rclcpp::Subscriber<geometry_msgs::msg::joint_state> subscriber_servoJP_t;
+        typename subscriber_servoJP_t::SharedPtr m_servoJPSub;
+
+        typedef typename rclcpp::Subscriber<geometry_msgs::msg::wrench_stamped> subscriber_servoCF_t;
+        typename subscriber_servoCF_t::SharedPtr m_servoCFSub;
+
+        map<string, subscriber_servoCP_t::SharedPtr> m_servoCPSubMap;
+        map<string, subscriber_servoCF_t::SharedPtr> m_servoCFSubMap;
+
+
+        typedef typename rclcpp::Publisher<crtk_msgs::msg::operating_state> publisher_operating_state_t;
+        typename publisher_operating_state_t::SharedPtr m_operatingStatePub;
+
+        typedef typename rclcpp::Publisher<geomerty_msgs::msg::pose_stamped> publisher_measuredCP_t;
+        typename publisher_measuredCP_t::SharedPtr m_measuredCPPub;
+
+        typedef typename rclcpp::Publisher<geometry_msgs::msg::joint_state> publisher_measuredJS_t;
+        typename publisher_measuredJS_t::SharedPtr m_measuredJSPub;
+
+        typedef typename rclcpp::Publisher<geometry_msgs::msg::wrench_stamped> publisher_measuredCF_t;
+        typename publisher_measuredCF_t::SharedPtr m_measuredCFPub;
+
+
+        map<string, publisher_measuredCP_t::SharedPtr> m_measuredCPPubMap;
+        map<string, publisher_measuredCF_t::SharedPtr> m_measuredCFPubMap;
+
+    #endif
     
     string m_nameSpace;
 
