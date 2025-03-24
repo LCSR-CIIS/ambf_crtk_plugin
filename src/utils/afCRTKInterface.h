@@ -52,7 +52,8 @@
 #include <math/CTransform.h>
 
 #include <afFramework.h>
-#include <ambf_server/RosComBase.h>
+// #include <ambf_server/RosComBase.h>
+#include <ambf_server/ambf_ral.h>
 
 #include <crtk_msgs/OperatingState.h>
 
@@ -77,7 +78,8 @@ public:
     void add_servo_cf(string a_namespace);
 
     // ROS related
-    ros::NodeHandle* m_rosNode;
+    // ros::NodeHandle* m_rosNode;
+    ambf_ral::node_ptr_t m_rosNode;
 
     // Callback functions
     void servo_CPCallback(geometry_msgs::PoseStampedConstPtr);

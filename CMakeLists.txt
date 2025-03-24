@@ -42,18 +42,51 @@ set(CMAKE_CXX_STANDARD 11)
 
 find_package(AMBF)
 find_package(Boost COMPONENTS program_options filesystem)
-find_package(catkin REQUIRED COMPONENTS
-  crtk_msgs
-)
+
+set (ROS1_depends ambf_server cv_bridge image_transport)
+find_package (catkin QUIET
+  COMPONENTS ${ROS1_depends})
+
+if (catkin_FOUND)
+    message ("Found ROS 1")
+    set (AMBF_ROS_VERSION 1)
+    include_directories(include ${catkin_INCLUDE_DIRS})
+
+    catkin_package(
+      INCLUDE_DIRS .
+      LIBRARIES ${PROJECT_NAME}
+      CATKIN_DEPENDS roscpp tf kdl_conversions
+    )
+
+else(catkin_FOUND)
+  # look for ROS2
+  set (AMBF_ROS_VERSION 2)
+  find_package (ament_cmake QUIET)
+  if (ament_cmake_FOUND)
+      set (AMBF_ROS_VERSION 2)
+      message ("Found ROS 2")
+      set (ROS2_depends
+        rclcpp
+        crtk_msgs geometry_msgs sensor_msgs 
+        ambf_msgs ambf_server)
+
+      foreach (_dep ${ROS2_depends})
+        find_package (${_dep} REQUIRED)
+      endforeach()
+
+      # include_directories(include)
+  endif (ament_cmake_FOUND)
+
+endif(catkin_FOUND)
 
 include_directories(${AMBF_INCLUDE_DIRS})
 include_directories(${Boost_INCLUDE_DIRS})
-include_directories(
-  ${catkin_INCLUDE_DIRS}
-)
+# include_directories(
+#   ${catkin_INCLUDE_DIRS}
+# )
 
-link_directories(${AMBF_LIBRARY_DIRS})
-add_definitions(${AMBF_DEFINITIONS})
+# link_directories(${AMBF_LIBRARY_DIRS})
+# add_definitions(${AMBF_DEFINITIONS})
 
 # For Simulator Plugin
 add_library(ambf_crtk_simulator_plugin SHARED
@@ -65,10 +98,6 @@ add_library(ambf_crtk_simulator_plugin SHARED
     src/simulator_plugin/CRTK_simulator_plugin.h
     )
 
-target_link_libraries (ambf_crtk_simulator_plugin ${Boost_LIBRARIES} ${AMBF_LIBRARIES} ${catkin_INCLUDE_DIRS})
-set_property(TARGET ambf_crtk_simulator_plugin PROPERTY POSITION_INDEPENDENT_CODE TRUE)
-
-
 # Model Plugin
 add_library(ambf_crtk_model_plugin SHARED
     src/utils/afCRTKInterface.cpp
@@ -78,9 +107,6 @@ add_library(ambf_crtk_model_plugin SHARED
     src/model_plugin/CRTK_model_plugin.cpp
     src/model_plugin/CRTK_model_plugin.h
     )
-target_link_libraries (ambf_crtk_model_plugin ${Boost_LIBRARIES} ${AMBF_LIBRARIES} ${catkin_INCLUDE_DIRS})
-set_property(TARGET ambf_crtk_model_plugin PROPERTY POSITION_INDEPENDENT_CODE TRUE)
-
 # Object Plugins
 add_library(ambf_crtk_object_plugin SHARED
     src/utils/afCRTKInterface.cpp
@@ -91,13 +117,24 @@ add_library(ambf_crtk_object_plugin SHARED
     src/object_plugin/CRTK_object_plugin.h
     )
 
-target_link_libraries (ambf_crtk_object_plugin ${Boost_LIBRARIES} ${AMBF_LIBRARIES} ${catkin_INCLUDE_DIRS})
-set_property(TARGET ambf_crtk_object_plugin PROPERTY POSITION_INDEPENDENT_CODE TRUE)
+set (ROS_CRTK_PLUGINS ambf_crtk_simulator_plugin ambf_crtk_model_plugin ambf_crtk_object_plugin )
+if (ROS_VERSION EQUAL 1)
 
-if(NOT BUILD_PLUGIN_WITH_ROS)
-    set(BUILD_PLUGIN_WITH_ROS TRUE)
-endif()
+  foreach (_plugin ${ROS_COMM_PLUGINS})
+    add_dependencies (${_plugin} ${catkin_EXPORTED_TARGETS})
+    target_link_libraries (${_plugin} ${catkin_LIBRARIES} ${AMBF_LIBRARIES})
+  endforeach ()
 
-if(BUILD_PLUGIN_WITH_ROS)
-    add_definitions(-DBUILD_WITH_ROS)
-endif()
+else ()
+
+  install (
+    TARGETS ${ROS_COMM_PLUGINS}
+    LIBRARY DESTINATION lib
+    ARCHIVE DESTINATION lib
+    RUNTIME DESTINATION bin
+    )
+
+  foreach (_plugin ${ROS_COMM_PLUGINS})
+    ament_target_dependencies (${_plugin} ambf_server ${ROS2_depends})
+  endforeach ()
+  ament_package ()
