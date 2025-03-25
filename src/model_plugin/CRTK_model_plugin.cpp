@@ -58,12 +58,15 @@ int afCRTKModelPlugin::init(const afModelPtr a_modelPtr, afModelAttribsPtr a_mod
     // Improve the constratint <- This will make the model unstable
     // m_worldPtr->m_bulletWorld->getSolverInfo().m_erp = 1.0;  
     // m_worldPtr->m_bulletWorld->getSolverInfo().m_erp2 = 1.0; 
-    
+
+    // Define path
+    string file_path = __FILE__;
+    string current_path = file_path.substr(0, file_path.rfind("/"));
     YAML::Node specificationDataNode = YAML::Load(a_modelAttribs->getSpecificationData().m_rawData);
 
     // If there is a configuration file given in the ADF file
     if (specificationDataNode["plugins"][0]["crtk_config"]){
-        m_configPath = specificationDataNode["plugins"][0]["crtk_config"].as<string>();
+        m_configPath = current_path + "/" + specificationDataNode["plugins"][0]["crtk_config"].as<string>();
         cerr << "[INFO!] Reading configuration file: " << m_configPath << endl;
         // return readConfigFile(m_configPath);
         return 1;
