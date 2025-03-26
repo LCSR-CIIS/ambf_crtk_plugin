@@ -8,13 +8,24 @@ Please visit [here](https://github.com/collaborative-robotics/documentation) for
 ## 1. Installation Instructions:
 Lets call the absolute location of this package as **<plugin_path>**. E.g. if you cloned this repo in your home folder, **<plugin_path>** = `~/ambf_crtk_plugin/` OR `/home/<username>/ambf_crtk_plugin`.
 
-### 1.1 clone and build 
+### 1.1 clone and build (For ROS2)
+Follow the instruction for ROS2 installation. Make sure you do not source ros1 in your .bashrc file.
+Current ROS2 implementation is only available as a Adnan's fork (`devel` branch). 
+Make sure to use the correct repo and branch. 
+
+[Caution!] This is currently tested only for ROS2.
+
 ```bash
-cd <catkin_ws or ros2_ws>
+mkdir ros2_ws # Create ros2_ws
+cd ros2_ws
 cd src
+git clone git@github.com:adnanmunawar/ambf.git
+cd ambf
+git checkout devel # switch to devel branch
+cd .. # go back to src 
 git clone git@github.com:LCSR-CIIS/ambf_crtk_plugin.git
-cd <catkin_ws or ros2_ws>
-catkin build or colcon_build
+cd ../ # make sure to colcon build in the root ros2_ws
+colcon_build
 ```
 
 ### 1.3 Source crtk_msgs
@@ -26,7 +37,7 @@ source ros2_ws/install/setup.bash # ROS2
 
 ## 2. How to use your plugin
 You can test this plugin on the example by:
-`<ambf_exe_dir> ---> e.g. ~/ambf/bin/lin-x86_64`
+<!-- `<ambf_exe_dir> ---> e.g. ~/ambf/bin/lin-x86_64` -->
 
 ### 2.1 Simulator plugin
 You are required to specify configuration file such as `example/CRTK_config.yaml`:
