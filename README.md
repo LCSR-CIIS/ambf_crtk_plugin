@@ -24,13 +24,20 @@ cd ambf
 git checkout devel # switch to devel branch
 cd .. # go back to src 
 git clone git@github.com:LCSR-CIIS/ambf_crtk_plugin.git
-cd ../ # make sure to colcon build in the root ros2_ws
-colcon_build
+cd ambf_crtk_plugin
+git checkout ros2 # switch to the ros2 branch
+cd ..
 ```
 
 ### 1.3 Source crtk_msgs
 Follow the instruction in [crtk_msgs](https://github.com/collaborative-robotics/crtk_msgs) and don't forget to source it.
 ```bash
+git clone https://github.com/collaborative-robotics/ros2_crtk_msgs crtk/crtk_msgs
+git clone https://github.com/collaborative-robotics/ros2_crtk_python_client crtk/crtk_python_client
+cd ../ # make sure to colcon build in the root ros2_ws
+
+colcon build
+
 source catkin_ws/devel/setup.bash # ROS1
 source ros2_ws/install/setup.bash # ROS2
 ```
@@ -42,8 +49,15 @@ You can test this plugin on the example by:
 ### 2.1 Simulator plugin
 You are required to specify configuration file such as `example/CRTK_config.yaml`:
 ```bash
-cd <ambf_exe_dir>
-./ambf_simulator --plugins <plugin_path>/build/libambf_crtk_simulator_plugin.so --conf <plugin_path>/example/CRTK_config.yaml
+cd <ambf_exe_dir> # ambf_exe_dir is likely in ros_ws/build/AMBF/bin,
+# optional: To execute ambf_simulator without having to be in the directory, one can set an alias
+alias ambf_simulator=~/ros_ws/build/AMBF/bin/ambf_simulator
+# Save and close the file and reload by either relaunching the terminal or typing 
+. ~/.bashrc
+```
+
+```bash
+./ambf_simulator --plugins <plugin_path>/build/ambf_crtk_plugin/libambf_crtk_simulator_plugin.so --conf <plugin_path>/example/CRTK_config.yaml
 ```
 You can also define plugin in your `launch.yaml`: 
 
