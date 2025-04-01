@@ -45,20 +45,26 @@ source ros2_ws/install/setup.bash # ROS2
 ## 2. How to use your plugin
 You can test this plugin on the example by:
 <!-- `<ambf_exe_dir> ---> e.g. ~/ambf/bin/lin-x86_64` -->
-
-### 2.1 Simulator plugin
-You are required to specify configuration file such as `example/CRTK_config.yaml`:
 ```bash
-cd <ambf_exe_dir> # ambf_exe_dir is likely in ros_ws/build/AMBF/bin,
+cd <ambf_exe_dir> # e.g. ros_ws/build/AMBF/bin,
 # optional: To execute ambf_simulator without having to be in the directory, one can set an alias
 alias ambf_simulator=~/ros_ws/build/AMBF/bin/ambf_simulator
 # Save and close the file and reload by either relaunching the terminal or typing 
 . ~/.bashrc
 ```
+With the alias set, ambf_simulator can be executed from a terminal from any location
+
+### 2.1 Simulator plugin
+You are required to specify configuration file such as `example/CRTK_config.yaml`:
+
+Assuming you are in <ros_ws>:
+<plugin_path> is where the plugins build to, e.g. `./build/ambf_crtk_plugin`
+<config_path> is the parent folder of the `_config.yaml` file, e.g. `./src/ambf_crtk_plugin/example/plguin-config/simulator_plugin`
 
 ```bash
-./ambf_simulator --plugins <plugin_path>/build/ambf_crtk_plugin/libambf_crtk_simulator_plugin.so --conf <plugin_path>/example/CRTK_config.yaml
+ambf_simulator --plugins <plugin_path>/libambf_crtk_simulator_plugin.so --conf <config_path>/CRTK_config.yaml
 ```
+
 You can also define plugin in your `launch.yaml`: 
 
 ```bash
@@ -169,14 +175,14 @@ In this example, there will be the following rostopics:
 
 ## Example command 
 Please refer to [Surgical Robotics Challenge](https://github.com/surgical-robotics-ai/surgical_robotics_challenge) and use the following command to use it for SRC:
-
+ 
 ```bash
-ambf_simulator --launch_file ~/surgical_robotics_challenge/launch.yaml -l 0,1,2,3,4,5 --plugins ./build/libambf_crtk_simulator_plugin.so --conf example/SRC_config.yaml 
+ambf_simulator --launch_file ~/surgical_robotics_challenge/launch.yaml -l 0,1,2,3,4,5 --plugins <plugin_path>/libambf_crtk_simulator_plugin.so --conf <config_path>/SRC_config.yaml 
 ```
 
 You can use the following example:
 ```bash
-ambf_simulator -a ~/3D-Slicer_ROS_Module_with_AMBF/AMBF_Plugin_3DSlicer/ADF/galen.yaml --plugins ./build/libambf_crtk_simulator_plugin.so --conf example/CRTK_config.yaml 
+ambf_simulator -a ~/3D-Slicer_ROS_Module_with_AMBF/AMBF_Plugin_3DSlicer/ADF/galen.yaml --plugins <plugin_path>/libambf_crtk_simulator_plugin.so --conf <config_path>/CRTK_config.yaml 
 ```
 
 You can use the following example to use model plugin for dvrk:
