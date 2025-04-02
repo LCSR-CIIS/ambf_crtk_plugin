@@ -30,7 +30,7 @@ cd ..
 ```
 
 ### 1.3 Source crtk_msgs
-Follow the instruction in [crtk_msgs](https://github.com/collaborative-robotics/crtk_msgs) and don't forget to source it.
+Follow these instructions to get [crtk_msgs](https://github.com/collaborative-robotics/crtk_msgs) and don't forget to source it.
 ```bash
 git clone https://github.com/collaborative-robotics/ros2_crtk_msgs crtk/crtk_msgs
 git clone https://github.com/collaborative-robotics/ros2_crtk_python_client crtk/crtk_python_client
@@ -59,7 +59,7 @@ You are required to specify configuration file such as `example/CRTK_config.yaml
 
 Assuming you are in <ros_ws>:
 <plugin_path> is where the plugins build to, e.g. `./build/ambf_crtk_plugin`
-<config_path> is the parent folder of the `_config.yaml` file, e.g. `./src/ambf_crtk_plugin/example/plguin-config/simulator_plugin`
+<config_path> is the parent folder of the `_config.yaml` file, e.g. `./src/ambf_crtk_plugin/example/plugin-config/simulator_plugin`
 
 ```bash
 ambf_simulator --plugins <plugin_path>/libambf_crtk_simulator_plugin.so --conf <config_path>/CRTK_config.yaml
@@ -77,7 +77,7 @@ plugins: [
 ]
 ```
 
-### 2.2 Model plguin
+### 2.2 Model plugin
 You can specify plugin in your ADF file as follows:
 ```bash
 plugins: [
