@@ -86,7 +86,7 @@ include_directories(${Boost_INCLUDE_DIRS})
 # )
 
 # link_directories(${AMBF_LIBRARY_DIRS})
-# add_definitions(${AMBF_DEFINITIONS})
+add_definitions(${AMBF_DEFINITIONS})
 
 # For Simulator Plugin
 add_library(ambf_crtk_simulator_plugin SHARED
