@@ -316,7 +316,7 @@ void afCRTKBasePlugin::runServoCP(Interface* interface, double dt){
                 btTransform Tcommand = to_btTransform(servo_cp);
 
                 // If the rigidbody is static
-                if (interface->m_servoCPRBsPtr[i]->isStaticOrKinematicObject()){
+                if (interface->m_servoCPRBsPtr[i]->m_bulletRigidBody->isStaticOrKinematicObject()){
                     interface->m_servoCPRBsPtr[i]->m_bulletRigidBody->getMotionState()->setWorldTransform(Tcommand);
                     interface->m_servoCPRBsPtr[i]->m_bulletRigidBody->setWorldTransform(Tcommand);
                 }
@@ -333,10 +333,15 @@ void afCRTKBasePlugin::runServoCP(Interface* interface, double dt){
                     rCommand = interface->m_servoCPRBsPtr[i]->m_controller.computeOutput<btVector3>(curr_trans.getBasis(), Tcommand.getBasis(), dt);
                     
                     // Set controller param here if needed
-                    interface->m_servoCPRBsPtr[i]->m_controller.m_positionOutputType = afControlType::FORCE;
-                    
-                    interface->m_servoCPRBsPtr[i]->applyCentralForce(pCommand);
-                    interface->m_servoCPRBsPtr[i]->applyTorque(rCommand);
+                    if (interface->m_servoCPRBsPtr[i]->m_controller.m_positionOutputType == afControlType::FORCE){
+                        interface->m_servoCPRBsPtr[i]->m_bulletRigidBody->applyCentralForce(pCommand);
+                        interface->m_servoCPRBsPtr[i]->m_bulletRigidBody->applyTorque(rCommand);
+                    }
+
+                    else if (interface->m_servoCPRBsPtr[i]->m_controller.m_positionOutputType == afControlType::VELOCITY){
+                        interface->m_servoCPRBsPtr[i]->m_bulletRigidBody->setLinearVelocity(pCommand);
+                        interface->m_servoCPRBsPtr[i]->m_bulletRigidBody->setAngularVelocity(rCommand);
+                    }
                 }   
             }   
         }

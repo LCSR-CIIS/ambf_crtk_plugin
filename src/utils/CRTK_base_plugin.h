@@ -52,6 +52,8 @@
 #include "afCRTKInterface.h"
 #include <regex>
 
+#include "afConversions.h"
+
 namespace boost{
     namespace program_options{
         class variables_map;
