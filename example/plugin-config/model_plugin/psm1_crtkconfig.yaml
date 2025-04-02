@@ -12,10 +12,10 @@ psm1:
       rigidbody: psm1/BODY tool yaw link,
       reference: CameraFrame
     },
-    {
-      rigidbody: psm1/BODY base link,
-      reference: CameraFrame
-    }
+    # {
+    #   rigidbody: psm1/BODY base link,
+    #   reference: CameraFrame
+    # }
   ]
   measured_js:
     joints:

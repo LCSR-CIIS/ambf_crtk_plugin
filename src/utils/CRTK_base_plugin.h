@@ -93,7 +93,7 @@ class afCRTKBasePlugin{
         void runMeasuredCP(Interface* interface);
         void runMeasuredJS(Interface* interface);
         void runMeasuredCF(Interface* interface);
-        void runServoCP(Interface* interface);
+        void runServoCP(Interface* interface, double dt);
         void runServoJP(Interface* interface);
         void runServoCF(Interface* interface);
 

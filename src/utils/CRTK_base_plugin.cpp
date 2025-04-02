@@ -306,27 +306,38 @@ void afCRTKBasePlugin::runMeasuredCF(Interface* interface){
 }
 
 
-void afCRTKBasePlugin::runServoCP(Interface* interface){
+void afCRTKBasePlugin::runServoCP(Interface* interface, double dt){
     // servo_cp
     if (interface->m_servoCPRBsPtr.size() > 0){
         cTransform servo_cp;
         for (size_t i = 0; i < interface->m_servoCPRBsPtr.size(); i++){
             if(interface->crtkInterface->servo_cp(servo_cp)){
-                // Change to btVector and Matrix
-                btTransform trans;
-                btVector3 btTrans;
-                
-                btTrans.setValue(servo_cp.getLocalPos().x(), servo_cp.getLocalPos().y(), servo_cp.getLocalPos().z());     
-                trans.setOrigin(btTrans);
-                cQuaternion quat;
-                quat.fromRotMat(servo_cp.getLocalRot());
-                btQuaternion btRot(quat.x,quat.y,quat.z,quat.w);
-                trans.setRotation(btRot);
+                // Move the rigid body
+                btTransform Tcommand = to_btTransform(servo_cp);
 
-                btTransform Tcommand;
-                Tcommand = trans;
-                interface->m_servoCPRBsPtr[i]->m_bulletRigidBody->getMotionState()->setWorldTransform(Tcommand);
-                interface->m_servoCPRBsPtr[i]->m_bulletRigidBody->setWorldTransform(Tcommand);
+                // If the rigidbody is static
+                if (interface->m_servoCPRBsPtr[i]->isStaticOrKinematicObject()){
+                    interface->m_servoCPRBsPtr[i]->m_bulletRigidBody->getMotionState()->setWorldTransform(Tcommand);
+                    interface->m_servoCPRBsPtr[i]->m_bulletRigidBody->setWorldTransform(Tcommand);
+                }
+                
+                // If the rigid body is non-static
+                else{
+                    // Get current location     
+                    btTransform curr_trans = interface->m_servoCPRBsPtr[i]->getCOMTransform();
+
+                    btVector3 pCommand, rCommand;
+                    // Use the internal Cartesian Position Controller to Compute Output
+                    pCommand = interface->m_servoCPRBsPtr[i]->m_controller.computeOutput<btVector3>(curr_trans.getOrigin(), Tcommand.getOrigin(), dt);
+                    // Use the internal Cartesian Rotation Controller to Compute Output
+                    rCommand = interface->m_servoCPRBsPtr[i]->m_controller.computeOutput<btVector3>(curr_trans.getBasis(), Tcommand.getBasis(), dt);
+                    
+                    // Set controller param here if needed
+                    interface->m_servoCPRBsPtr[i]->m_controller.m_positionOutputType = afControlType::FORCE;
+                    
+                    interface->m_servoCPRBsPtr[i]->applyCentralForce(pCommand);
+                    interface->m_servoCPRBsPtr[i]->applyTorque(rCommand);
+                }   
             }   
         }
     }
