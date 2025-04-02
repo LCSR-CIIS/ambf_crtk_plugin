@@ -10,7 +10,7 @@ BODY CameraFrame:
   plugins: [
     {
       name: ambf_object_plugin,
-      path: ../../build/,
+      path: /home/hishida3/ros2_ws/build/ambf_crtk_plugin,
       filename: libambf_crtk_object_plugin.so
     }
   ]

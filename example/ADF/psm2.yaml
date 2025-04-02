@@ -39,9 +39,9 @@ namespace: /ambf/env/psm2/
 plugins: [
     {
       name: ambf_model_plugin,
-      path: ../../build/,
+      path: ../build/ambf_crtk_plugin,
       filename: libambf_crtk_model_plugin.so,
-      crtk_config: example/plguin-config/model_plugin/psm2_crtkconfig.yaml
+      crtk_config: ../../example/plugin-config/model_plugin/psm2_crtkconfig.yaml
     }
 ]
 

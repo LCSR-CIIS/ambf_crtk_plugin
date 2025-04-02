@@ -45,17 +45,30 @@
 #ifndef AFCRTK_INTERFACE_H
 #define AFCRTK_INTERFACE_H
 
+
+#include <math/CTransform.h>
+
+#include <afFramework.h>
+
+// to define AMBF_ROS1, AMBF_ROS2 , AMBF_ROS_DISTRO
+#include <ambf_server/ambf_ral_config.h>
+
+#if AMBF_ROS1
 #include <ros/ros.h>
 #include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/WrenchStamped.h>
 #include <sensor_msgs/JointState.h>
-#include <math/CTransform.h>
+#include <crtk_msgs/operating_state.h>
+#elif AMBF_ROS2
+#include <rclcpp/rclcpp.hpp>
+#include "geometry_msgs/msg/pose_stamped.hpp"
+#include "geometry_msgs/msg/wrench_stamped.hpp"
+#include "sensor_msgs/msg/joint_state.hpp"
+#include "crtk_msgs/msg/operating_state.hpp"
+#include <ambf_server/ambf_ral.h>
+#endif
 
-#include <afFramework.h>
 #include <ambf_server/RosComBase.h>
-
-#include <crtk_msgs/OperatingState.h>
-
 
 
 using namespace chai3d;
@@ -77,12 +90,13 @@ public:
     void add_servo_cf(string a_namespace);
 
     // ROS related
-    ros::NodeHandle* m_rosNode;
+    // ros::NodeHandle* m_rosNode;
+    ambf_ral::node_ptr_t m_rosNode;
 
     // Callback functions
-    void servo_CPCallback(geometry_msgs::PoseStampedConstPtr);
-    void servo_JPCallback(sensor_msgs::JointStateConstPtr);
-    void servo_CFCallback(geometry_msgs::WrenchStampedConstPtr);
+    void servo_CPCallback(AMBF_RAL_MSG_PTR(geometry_msgs, PoseStamped) msg); 
+    void servo_JPCallback(AMBF_RAL_MSG_PTR(sensor_msgs, JointState) msg);
+    void servo_CFCallback(AMBF_RAL_MSG_PTR(geometry_msgs, WrenchStamped) msg);
 
     // Query Command
     void run_operating_state();
@@ -97,24 +111,53 @@ public:
 
 
 private:
-    // Subscribers
-    ros::Subscriber m_servoCPSub;
-    ros::Subscriber m_servoJPSub;
-    ros::Subscriber m_servoCFSub;
 
-    map<string, ros::Subscriber> m_servoCPSubMap;
-    map<string, ros::Subscriber> m_servoCFSubMap;
+    #if AMBF_ROS1
+        // Subscribers
+        ros::Subscriber m_servoCPSub;
+        ros::Subscriber m_servoJPSub;
+        ros::Subscriber m_servoCFSub;
 
-    // Publishers
-    ros::Publisher m_operatingStatePub;
-    ros::Publisher m_measuredCPPub;
-    ros::Publisher m_measuredJSPub;
-    ros::Publisher m_measuredCFPub;
-    ros::Publisher m_statePub;
+        map<string, ros::Subscriber> m_servoCPSubMap;
+        map<string, ros::Subscriber> m_servoCFSubMap;
 
-    map<string, ros::Publisher> m_measuredCPPubMap;
-    map<string, ros::Publisher> m_measuredCFPubMap;
+        // Publishers
+        ros::Publisher m_operatingStatePub;
+        ros::Publisher m_measuredCPPub;
+        ros::Publisher m_measuredJSPub;
+        ros::Publisher m_measuredCFPub;
 
+        map<string, ros::Publisher> m_measuredCPPubMap;
+        map<string, ros::Publisher> m_measuredCFPubMap;
+
+        crtk_msgs::OperatingState m_operatingState;
+        geometry_msgs::PoseStamped m_measured_cp;   
+        sensor_msgs::JointState m_measured_js;
+        geometry_msgs::WrenchStamped m_measured_cf;
+
+    #elif AMBF_ROS2
+        // Subscribers
+        rclcpp::Subscription<geometry_msgs::msg::PoseStamped>::SharedPtr m_servoCPSub; 
+        rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr m_servoJPSub;
+        rclcpp::Subscription<geometry_msgs::msg::WrenchStamped>::SharedPtr m_servoCFSub;
+
+        map<string, rclcpp::Subscription<geometry_msgs::msg::PoseStamped>::SharedPtr> m_servoCPSubMap;
+        map<string, rclcpp::Subscription<geometry_msgs::msg::WrenchStamped>::SharedPtr> m_servoCFSubMap;
+
+        rclcpp::Publisher<crtk_msgs::msg::OperatingState>::SharedPtr m_operatingStatePub;
+        rclcpp::Publisher<geometry_msgs::msg::PoseStamped>::SharedPtr m_measuredCPPub;
+        rclcpp::Publisher<sensor_msgs::msg::JointState>::SharedPtr m_measuredJSPub;
+        rclcpp::Publisher<geometry_msgs::msg::WrenchStamped>::SharedPtr m_measuredCFPub;
+
+        map<string, rclcpp::Publisher<geometry_msgs::msg::PoseStamped>::SharedPtr> m_measuredCPPubMap;
+        map<string, rclcpp::Publisher<geometry_msgs::msg::WrenchStamped>::SharedPtr> m_measuredCFPubMap;
+
+        crtk_msgs::msg::OperatingState m_operatingState;
+        geometry_msgs::msg::PoseStamped m_measured_cp;   
+        sensor_msgs::msg::JointState m_measured_js;
+        geometry_msgs::msg::WrenchStamped m_measured_cf;
+
+    #endif
     
     string m_nameSpace;
 
@@ -126,10 +169,7 @@ private:
     vector<double> m_servo_jp;
     vector<double> m_servo_cf = vector<double>(6);
 
-    crtk_msgs::OperatingState m_operatingState;
-    geometry_msgs::PoseStamped m_measured_cp;
-    sensor_msgs::JointState m_measured_js;
-    geometry_msgs::WrenchStamped m_measured_cf;
+    
 };
 
 
