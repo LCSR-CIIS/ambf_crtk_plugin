@@ -17,6 +17,14 @@ psm1:
     #   reference: CameraFrame
     # }
   ]
+
+  setpoint_cp: [
+    {
+      rigidbody: psm1/BODY tool yaw link,
+      reference: CameraFrame
+    }
+  ]
+
   measured_js:
     joints:
     - psm1/JOINT pitch end link-main insertion link

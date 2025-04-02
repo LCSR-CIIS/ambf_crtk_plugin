@@ -112,6 +112,48 @@ int afCRTKBasePlugin::InitInterface(YAML::Node& node, Interface* interface){
         }
         
     }
+
+    if (node[interface->m_name]["setpoint_cp"]){
+        for (size_t i = 0; i < node[interface->m_name]["setpoint_cp"].size(); i++){
+            if(node[interface->m_name]["setpoint_cp"][i]["rigidbody"]){
+                cerr << "[INFO!] Adding setpoint_cp ... " << endl;
+                if (node[interface->m_name]["setpoint_cp"][i]["reference"]){
+                    string objectName = node[interface->m_name]["setpoint_cp"][i]["reference"].as<string>();
+                    interface->m_referenceSetpointPtr = (afBaseObjectPtr)m_worldPtr->getRigidBody(objectName);
+                }
+
+                string rigidName = node[interface->m_name]["setpoint_cp"][i]["rigidbody"].as<string>();
+                afRigidBodyPtr rigidBodyPtr = m_worldPtr->getRigidBody(rigidName);
+
+                if(!rigidBodyPtr){
+                    cerr << ">> ERROR!! No RigidBody Named " << node[interface->m_name]["setpoint_cp"][i]["rigidbody"].as<string>() << " for setpoint_cp" << endl;
+                    return -1;
+                }
+                interface->m_setpointCPRBsPtr.push_back(rigidBodyPtr);
+                rigidName = getNamefromPtr((afBaseObjectPtr)rigidBodyPtr);
+                
+                if(node[interface->m_name]["setpoint_cp"][i]["namespace"]){
+                    if (interface->m_referenceSetpointPtr){
+                        interface->crtkInterface->add_setpoint_cp(node[interface->m_name]["setpoint_cp"][i]["namespace"].as<string>() + rigidName);
+                    }
+                    interface->crtkInterface->add_setpoint_cp(node[interface->m_name]["setpoint_cp"][i]["namespace"].as<string>() + "/local/" + rigidName);
+                }
+                else{
+                    if (interface->m_referenceSetpointPtr){
+                        interface->crtkInterface->add_setpoint_cp(rigidName); 
+                    }
+                    interface->crtkInterface->add_setpoint_cp("local/" +rigidName); 
+                }
+            }
+
+            else{  
+                cerr << ">> ERROR!! No RigidBody specified for setpoint_cp" << endl;
+                return -1;
+            }
+        }
+        
+    }
+    
     if (node[interface->m_name]["measured_js"]){
         vector<string> jointNames;
         cerr << "[INFO!] Adding measured_js ... " << endl;
@@ -276,6 +318,38 @@ void afCRTKBasePlugin::runMeasuredCP(Interface* interface){
                 interface->crtkInterface->measured_cp(referenceToMeasuredCP, getNamefromPtr((afBaseObjectPtr)interface->m_measuredObjectPtr[i]));
             }
             interface->crtkInterface->measured_cp(measured_cp, "local/" + getNamefromPtr((afBaseObjectPtr)interface->m_measuredObjectPtr[i]));
+        }
+    }
+}
+
+void afCRTKBasePlugin::runSetpointCP(Interface* interface){
+    // measured_cp
+    cTransform referenceSetpointCP, referenceToSetpointCP;
+    if (interface->m_setpointCPRBsPtr.size() > 0){
+        for (size_t i = 0; i < interface->m_setpointCPRBsPtr.size(); i++){
+            cTransform setpoint_cp = interface->m_setpointCPRBsPtr[i]->getLocalTransform();
+            if (interface->m_referenceSetpointPtr){
+                referenceSetpointCP = interface->m_referenceSetpointPtr->getLocalTransform();
+                referenceSetpointCP.invert();
+                referenceToSetpointCP = referenceSetpointCP * setpoint_cp;
+                interface->crtkInterface->setpoint_cp(referenceToSetpointCP, getNamefromPtr((afBaseObjectPtr)interface->m_setpointCPRBsPtr[i]));
+                
+            }
+            interface->crtkInterface->setpoint_cp(setpoint_cp, "local/" + getNamefromPtr((afBaseObjectPtr)interface->m_setpointCPRBsPtr[i]));
+        }
+    }
+
+    // measured_cp
+    if (interface->m_setpointObjectPtr.size() > 0){
+        for (size_t i = 0; i < interface->m_measuredObjectPtr.size(); i++){
+            cTransform measured_cp = interface->m_measuredObjectPtr[i]->getLocalTransform();
+            if (interface->m_referenceMeasuredPtr){
+                referenceSetpointCP = interface->m_referenceMeasuredPtr->getLocalTransform();
+                referenceSetpointCP.invert();
+                referenceToSetpointCP = referenceSetpointCP * measured_cp;
+                interface->crtkInterface->setpoint_cp(referenceToSetpointCP, getNamefromPtr((afBaseObjectPtr)interface->m_setpointObjectPtr[i]));
+            }
+            interface->crtkInterface->setpoint_cp(measured_cp, "local/" + getNamefromPtr((afBaseObjectPtr)interface->m_setpointObjectPtr[i]));
         }
     }
 }

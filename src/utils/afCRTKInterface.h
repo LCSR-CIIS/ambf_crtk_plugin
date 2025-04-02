@@ -83,6 +83,7 @@ public:
     void add_allInterface(string a_namespace);
     void add_operating_state(string a_namespace);
     void add_measured_cp(string a_namespace);
+    void add_setpoint_cp(string a_namespace);
     void add_measured_js(string a_namespace, vector<string> jointName);
     void add_measured_cf(string a_namespace);
     void add_servo_cp(string a_namespace);
@@ -101,6 +102,7 @@ public:
     // Query Command
     void run_operating_state();
     void measured_cp(cTransform &trans, string name = "default");
+    void setpoint_cp(cTransform &trans, string name = "default");
     void measured_js(vector<double>& q);
     void measured_cf(vector<double>& force, string name = "default");
 
@@ -146,14 +148,17 @@ private:
 
         rclcpp::Publisher<crtk_msgs::msg::OperatingState>::SharedPtr m_operatingStatePub;
         rclcpp::Publisher<geometry_msgs::msg::PoseStamped>::SharedPtr m_measuredCPPub;
+        rclcpp::Publisher<geometry_msgs::msg::PoseStamped>::SharedPtr m_setpointCPPub;
         rclcpp::Publisher<sensor_msgs::msg::JointState>::SharedPtr m_measuredJSPub;
         rclcpp::Publisher<geometry_msgs::msg::WrenchStamped>::SharedPtr m_measuredCFPub;
 
         map<string, rclcpp::Publisher<geometry_msgs::msg::PoseStamped>::SharedPtr> m_measuredCPPubMap;
+        map<string, rclcpp::Publisher<geometry_msgs::msg::PoseStamped>::SharedPtr> m_setpointCPPubMap;
         map<string, rclcpp::Publisher<geometry_msgs::msg::WrenchStamped>::SharedPtr> m_measuredCFPubMap;
 
         crtk_msgs::msg::OperatingState m_operatingState;
         geometry_msgs::msg::PoseStamped m_measured_cp;   
+        geometry_msgs::msg::PoseStamped m_setpoint_cp;   
         sensor_msgs::msg::JointState m_measured_js;
         geometry_msgs::msg::WrenchStamped m_measured_cf;
 

@@ -61,6 +61,8 @@ void afCRTKInterface::init(string a_namespace){
 
 void afCRTKInterface::add_allInterface(string a_namespace){
     ambf_ral::create_publisher<AMBF_RAL_MSG(geometry_msgs, PoseStamped)>
+      (m_setpointCPPub, m_rosNode, m_nameSpace + "/setpoint_cp", 1, false);
+    ambf_ral::create_publisher<AMBF_RAL_MSG(geometry_msgs, PoseStamped)>
       (m_measuredCPPub, m_rosNode, m_nameSpace + "/measured_cp", 1, false);
     ambf_ral::create_publisher<AMBF_RAL_MSG(sensor_msgs, JointState)>
       (m_measuredJSPub, m_rosNode, m_nameSpace + "/measured_js", 1, false);
@@ -105,6 +107,23 @@ void afCRTKInterface::add_measured_cp(string a_namespace){
       (m_measuredCPPub, m_rosNode, baseName + "/measured_cp", 1, false);
 
     m_measuredCPPubMap[a_namespace] = m_measuredCPPub;
+    
+    // m_measuredCPPub = m_rosNode->advertise<geometry_msgs::PoseStamped>(baseName + "/measured_cp", 1);
+    // m_measuredCPPubMap[a_namespace] = m_rosNode->advertise<geometry_msgs::PoseStamped>(baseName + "/measured_cp", 1);
+}
+
+void afCRTKInterface::add_setpoint_cp(string a_namespace){
+    string baseName;
+    if(a_namespace == ""){
+        baseName = m_nameSpace;
+    }
+    else{
+        baseName = m_nameSpace + "/" + a_namespace;
+    }
+    ambf_ral::create_publisher<AMBF_RAL_MSG(geometry_msgs, PoseStamped)>
+      (m_setpointCPPub, m_rosNode, baseName + "/setpoint_cp", 1, false);
+
+    m_setpointCPPubMap[a_namespace] = m_setpointCPPub;
     
     // m_measuredCPPub = m_rosNode->advertise<geometry_msgs::PoseStamped>(baseName + "/measured_cp", 1);
     // m_measuredCPPubMap[a_namespace] = m_rosNode->advertise<geometry_msgs::PoseStamped>(baseName + "/measured_cp", 1);
@@ -283,6 +302,36 @@ void afCRTKInterface::measured_cp(cTransform &trans, string name){
     }
     else{
         m_measuredCPPubMap[name]->publish(m_measured_cp);
+    }
+    #endif
+}
+
+void afCRTKInterface::setpoint_cp(cTransform &trans, string name){
+    
+    m_setpoint_cp.pose.position.x = trans.getLocalPos().x();
+    m_setpoint_cp.pose.position.y = trans.getLocalPos().y();
+    m_setpoint_cp.pose.position.z = trans.getLocalPos().z();
+
+    cQuaternion rot;
+    rot.fromRotMat(trans.getLocalRot());
+    m_setpoint_cp.pose.orientation.x = rot.x;
+    m_setpoint_cp.pose.orientation.y = rot.y;
+    m_setpoint_cp.pose.orientation.z = rot.z;
+    m_setpoint_cp.pose.orientation.w = rot.w;
+
+    #if AMBF_ROS1
+    if (name == "default"){
+        m_setpointCPPub.publish(m_setpoint_cp);
+    }
+    else{
+        m_setpointCPPubMap[name].publish(m_setpoint_cp);
+    }
+    #elif AMBF_ROS2
+    if (name == "default"){
+        m_setpointCPPub->publish(m_setpoint_cp);
+    }
+    else{
+        m_setpointCPPubMap[name]->publish(m_setpoint_cp);
     }
     #endif
     

@@ -95,6 +95,7 @@ void afCRTKModelPlugin::physicsUpdate(double dt){
         for (Interface* interface:m_interface){
             runOperatingState(interface);
             runMeasuredCP(interface);
+            runSetpointCP(interface);
             runMeasuredJS(interface);
             runMeasuredCF(interface);
             runServoCP(interface, dt);
