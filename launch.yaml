@@ -5,7 +5,7 @@ input devices config: ./ADF/input_devices/input_devices.yaml
 
 # plugins: [
 #  {
-#    path: ./build, 
+#    path:  ../build/ambf_crtk_plugin, 
 #    name: crtk_plugin,
 #    filename: libambf_crtk_simulator_plugin.so
 #  }
