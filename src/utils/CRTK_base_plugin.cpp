@@ -99,9 +99,9 @@ int afCRTKBasePlugin::InitInterface(YAML::Node& node, Interface* interface){
                 }
                 else{
                     if (interface->m_referenceMeasuredPtr){
-                        interface->crtkInterface->add_measured_cp(rigidName); 
+                        interface->crtkInterface->add_measured_cp(interface->m_name + '/' + rigidName); 
                     }
-                    interface->crtkInterface->add_measured_cp("local/" +rigidName); 
+                    interface->crtkInterface->add_measured_cp(interface->m_name + "/local/" + rigidName); 
                 }
             }
 
@@ -140,9 +140,9 @@ int afCRTKBasePlugin::InitInterface(YAML::Node& node, Interface* interface){
                 }
                 else{
                     if (interface->m_referenceSetpointPtr){
-                        interface->crtkInterface->add_setpoint_cp(rigidName); 
+                        interface->crtkInterface->add_setpoint_cp(interface->m_name + '/' + rigidName); 
                     }
-                    interface->crtkInterface->add_setpoint_cp("local/" +rigidName); 
+                    interface->crtkInterface->add_setpoint_cp(interface->m_name + "/local/"  + rigidName); 
                 }
             }
 
@@ -187,7 +187,7 @@ int afCRTKBasePlugin::InitInterface(YAML::Node& node, Interface* interface){
                     interface->crtkInterface->add_measured_cf(node[interface->m_name]["measured_cf"][j]["namespace"].as<string>()+ '/' + rigidName);
                 }
                 else{
-                    interface->crtkInterface->add_measured_cf(rigidName);                    
+                    interface->crtkInterface->add_measured_cf(interface->m_name + "/" + rigidName);                    
                 }
             }
         }
@@ -225,9 +225,9 @@ int afCRTKBasePlugin::InitInterface(YAML::Node& node, Interface* interface){
                 }
                 else{
                     if (interface->m_referenceServoPtr){
-                        interface->crtkInterface->add_servo_cp(rigidName);
+                        interface->crtkInterface->add_servo_cp(interface->m_name + "/" + rigidName);
                     }
-                    interface->crtkInterface->add_servo_cp("local/" + rigidName);
+                    interface->crtkInterface->add_servo_cp(interface->m_name + "/local/"  rigidName);
                 }
             }
 
@@ -270,7 +270,7 @@ int afCRTKBasePlugin::InitInterface(YAML::Node& node, Interface* interface){
                 if(node[interface->m_name]["servo_cf"]["namespace"])
                     interface->crtkInterface->add_servo_cf(node[interface->m_name]["servo_cf"][j]["namespace"].as<string>() + '/' + rigidName);
                 else
-                    interface->crtkInterface->add_servo_cf(rigidName);
+                    interface->crtkInterface->add_servo_cf(interface->m_name + "/" + rigidName);
             }
         }
 
@@ -323,7 +323,7 @@ void afCRTKBasePlugin::runMeasuredCP(Interface* interface){
 }
 
 void afCRTKBasePlugin::runSetpointCP(Interface* interface){
-    // measured_cp
+    // setpoint_cp for RigidBody
     cTransform referenceSetpointCP, referenceToSetpointCP;
     if (interface->m_setpointCPRBsPtr.size() > 0){
         for (size_t i = 0; i < interface->m_setpointCPRBsPtr.size(); i++){
@@ -339,17 +339,17 @@ void afCRTKBasePlugin::runSetpointCP(Interface* interface){
         }
     }
 
-    // measured_cp
+    // setpoint_cp for baseObject
     if (interface->m_setpointObjectPtr.size() > 0){
         for (size_t i = 0; i < interface->m_measuredObjectPtr.size(); i++){
-            cTransform measured_cp = interface->m_measuredObjectPtr[i]->getLocalTransform();
+            cTransform setpoint_cp = interface->m_measuredObjectPtr[i]->getLocalTransform();
             if (interface->m_referenceMeasuredPtr){
                 referenceSetpointCP = interface->m_referenceMeasuredPtr->getLocalTransform();
                 referenceSetpointCP.invert();
-                referenceToSetpointCP = referenceSetpointCP * measured_cp;
+                referenceToSetpointCP = referenceSetpointCP * setpoint_cp;
                 interface->crtkInterface->setpoint_cp(referenceToSetpointCP, getNamefromPtr((afBaseObjectPtr)interface->m_setpointObjectPtr[i]));
             }
-            interface->crtkInterface->setpoint_cp(measured_cp, "local/" + getNamefromPtr((afBaseObjectPtr)interface->m_setpointObjectPtr[i]));
+            interface->crtkInterface->setpoint_cp(setpoint_cp, "local/" + getNamefromPtr((afBaseObjectPtr)interface->m_setpointObjectPtr[i]));
         }
     }
 }

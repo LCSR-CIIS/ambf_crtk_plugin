@@ -76,6 +76,7 @@ class Interface{
         // Joint related Pointers
         vector<afJointPtr> m_measuredJointsPtr, m_servoJointsPtr;
         vector<afJointPtr> m_measuredCPJointsPtr, m_servoCPJointsPtr;
+        
         // RigidBody Pointers
         vector<afRigidBodyPtr> m_measuredCPRBsPtr, m_measuredCFRBsPtr, m_servoCPRBsPtr, m_servoCFRBsPtr;
         vector<afRigidBodyPtr> m_setpointCPRBsPtr;

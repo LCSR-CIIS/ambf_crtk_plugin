@@ -86,7 +86,7 @@ void afCRTKInterface::add_operating_state(string a_namespace){
         baseName = m_nameSpace;
     }
     else{
-        baseName = m_nameSpace + "/" + a_namespace;
+        baseName = a_namespace;
     }
     ambf_ral::create_publisher<AMBF_RAL_MSG(crtk_msgs, OperatingState)>
       (m_operatingStatePub, m_rosNode, baseName + "/operating_state", 1, false);
@@ -101,12 +101,12 @@ void afCRTKInterface::add_measured_cp(string a_namespace){
         baseName = m_nameSpace;
     }
     else{
-        baseName = m_nameSpace + "/" + a_namespace;
+        baseName = a_namespace;
     }
     ambf_ral::create_publisher<AMBF_RAL_MSG(geometry_msgs, PoseStamped)>
       (m_measuredCPPub, m_rosNode, baseName + "/measured_cp", 1, false);
 
-    m_measuredCPPubMap[a_namespace] = m_measuredCPPub;
+    m_measuredCPPubMap[baseName] = m_measuredCPPub;
     
     // m_measuredCPPub = m_rosNode->advertise<geometry_msgs::PoseStamped>(baseName + "/measured_cp", 1);
     // m_measuredCPPubMap[a_namespace] = m_rosNode->advertise<geometry_msgs::PoseStamped>(baseName + "/measured_cp", 1);
@@ -118,12 +118,12 @@ void afCRTKInterface::add_setpoint_cp(string a_namespace){
         baseName = m_nameSpace;
     }
     else{
-        baseName = m_nameSpace + "/" + a_namespace;
+        baseName = a_namespace;
     }
     ambf_ral::create_publisher<AMBF_RAL_MSG(geometry_msgs, PoseStamped)>
       (m_setpointCPPub, m_rosNode, baseName + "/setpoint_cp", 1, false);
 
-    m_setpointCPPubMap[a_namespace] = m_setpointCPPub;
+    m_setpointCPPubMap[baseName] = m_setpointCPPub;
     
     // m_measuredCPPub = m_rosNode->advertise<geometry_msgs::PoseStamped>(baseName + "/measured_cp", 1);
     // m_measuredCPPubMap[a_namespace] = m_rosNode->advertise<geometry_msgs::PoseStamped>(baseName + "/measured_cp", 1);
@@ -136,7 +136,7 @@ void afCRTKInterface::add_measured_js(string a_namespace, vector<string> jointNa
         baseName = m_nameSpace;
     }
     else{
-        baseName = m_nameSpace + "/" + a_namespace;
+        baseName = a_namespace;
     }
     ambf_ral::create_publisher<AMBF_RAL_MSG(sensor_msgs, JointState)>
       (m_measuredJSPub, m_rosNode, baseName + "/measured_js", 1, false);
@@ -155,12 +155,12 @@ void afCRTKInterface::add_measured_cf(string a_namespace){
         baseName = m_nameSpace;
     }
     else{
-        baseName = m_nameSpace + "/" + a_namespace;
+        baseName = a_namespace;
     }
     ambf_ral::create_publisher<AMBF_RAL_MSG(geometry_msgs, WrenchStamped)>
       (m_measuredCFPub, m_rosNode, baseName + "/measured_cf", 1, false);
     // m_measuredCFPub = m_rosNode->advertise<geometry_msgs::WrenchStamped>(baseName + "/measured_cf", 1);
-    m_measuredCFPubMap[a_namespace] = m_measuredCFPub; 
+    m_measuredCFPubMap[baseName] = m_measuredCFPub; 
 }
 
 
@@ -170,13 +170,13 @@ void afCRTKInterface::add_servo_cp(string a_namespace){
         baseName = m_nameSpace;
     }
     else{
-        baseName = m_nameSpace + "/" + a_namespace;
+        baseName = a_namespace;
     }
 
     ambf_ral::create_subscriber<AMBF_RAL_MSG(geometry_msgs, PoseStamped), afCRTKInterface>
       (m_servoCPSub, m_rosNode, baseName + "/servo_cp", 1, &afCRTKInterface::servo_CPCallback, this);
     // m_servoCPSub = m_rosNode->subscribe(baseName + "/servo_cp", 1, &afCRTKInterface::servo_CPCallback, this);
-    m_servoCPSubMap[a_namespace] = m_servoCPSub;
+    m_servoCPSubMap[baseName] = m_servoCPSub;
 }
 
 
@@ -186,7 +186,7 @@ void afCRTKInterface::add_servo_jp(string a_namespace){
         baseName = m_nameSpace;
     }
     else{
-        baseName = m_nameSpace + "/" + a_namespace;
+        baseName = a_namespace;
     }
     ambf_ral::create_subscriber<AMBF_RAL_MSG(sensor_msgs, JointState), afCRTKInterface>
       (m_servoJPSub, m_rosNode, baseName + "/servo_jp", 1, &afCRTKInterface::servo_JPCallback, this);
@@ -200,12 +200,12 @@ void afCRTKInterface::add_servo_cf(string a_namespace){
         baseName = m_nameSpace;
     }
     else{
-        baseName = m_nameSpace + "/" + a_namespace;
+        baseName = a_namespace;
     }
     ambf_ral::create_subscriber<AMBF_RAL_MSG(geometry_msgs, WrenchStamped), afCRTKInterface>
       (m_servoCFSub, m_rosNode, baseName + "/servo_cf", 1, &afCRTKInterface::servo_CFCallback, this);
     // m_servoCFSub = m_rosNode->subscribe(baseName + "/servo_cf", 1 , &afCRTKInterface::servo_CFCallback, this);
-    m_servoCFSubMap[a_namespace] = m_servoCFSub;
+    m_servoCFSubMap[baseName] = m_servoCFSub;
 }
 
    
