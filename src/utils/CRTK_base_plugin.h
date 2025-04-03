@@ -78,12 +78,11 @@ class Interface{
         vector<afJointPtr> m_measuredCPJointsPtr, m_servoCPJointsPtr;
         
         // RigidBody Pointers
-        vector<afRigidBodyPtr> m_measuredCPRBsPtr, m_measuredCFRBsPtr, m_servoCPRBsPtr, m_servoCFRBsPtr;
-        vector<afRigidBodyPtr> m_setpointCPRBsPtr;
+        map<string, afRigidBodyPtr> m_measuredCPRBsPtr, m_setpointCPRBsPtr, m_measuredCFRBsPtr, m_servoCPRBsPtr, m_servoCFRBsPtr;
         
         // Non RigidBody Pointers
-        vector<afBaseObjectPtr> m_measuredObjectPtr, m_servoObjectPtr, m_measuredReferencePtr, m_servoReferencePtr;
-        vector<afBaseObjectPtr> m_setpointObjectPtr;
+        map<string, afBaseObjectPtr> m_measuredObjectPtr, m_setpointObjectPtr, m_servoObjectPtr, m_measuredReferencePtr, m_servoReferencePtr;
+
         // Pointer for reference
         afBaseObjectPtr m_referenceMeasuredPtr = nullptr, m_referenceSetpointPtr = nullptr, m_referenceServoPtr = nullptr;
 };

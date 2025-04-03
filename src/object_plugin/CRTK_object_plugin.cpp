@@ -72,18 +72,18 @@ void afCRTKObjectPlugin::physicsUpdate(double dt){
 
     // measured_cp
     if (m_interface[0]->m_measuredObjectPtr.size() > 0){
-        for (size_t i = 0; i < m_interface[0]->m_measuredObjectPtr.size(); i++){
-            cTransform measured_cp = m_interface[0]->m_measuredObjectPtr[i]->getLocalTransform();
-            m_interface[0]->crtkInterface->measured_cp(measured_cp, getNamefromPtr((afBaseObjectPtr)m_interface[0]->m_measuredObjectPtr[i]));
+        for (auto pairNamePtr : m_interface[0]->m_measuredObjectPtr){
+            cTransform measured_cp = pairNamePtr.second->getLocalTransform();
+            m_interface[0]->crtkInterface->measured_cp(measured_cp, pairNamePtr.first);
         }
     }
 
      // servo_cp
     if (m_interface[0]->m_servoObjectPtr.size() > 0){
         cTransform servo_cp;
-        for (size_t i = 0; i < m_interface[0]->m_servoObjectPtr.size(); i++){
+        for (auto pairNamePtr : m_interface[0]->m_servoObjectPtr){
             if(m_interface[0]->crtkInterface->servo_cp(servo_cp)){
-                m_interface[0]->m_servoObjectPtr[i]->setLocalTransform(servo_cp);
+                pairNamePtr.second->setLocalTransform(servo_cp);
             }   
         }
     }
@@ -107,8 +107,8 @@ int afCRTKObjectPlugin::loadCRTKInterfacefromObject(){
     objectName = regex_replace(objectName, regex{" "}, string{"_"});
     m_interface[0]->crtkInterface->add_measured_cp(objectName);
     m_interface[0]->crtkInterface->add_servo_cp(objectName);
-    m_interface[0]->m_measuredObjectPtr.push_back(m_objectPtr); 
-    m_interface[0]->m_servoObjectPtr.push_back(m_objectPtr); 
+    m_interface[0]->m_measuredObjectPtr[objectName] = m_objectPtr; 
+    m_interface[0]->m_servoObjectPtr[objectName] = m_objectPtr; 
     
 
     // This part is not working

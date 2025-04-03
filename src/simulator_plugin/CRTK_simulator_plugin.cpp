@@ -169,10 +169,11 @@ int afCRTKSimulatorPlugin::loadCRTKInterfaceFromSimulator(){
                     interface->crtkInterface->add_measured_cf(objectName);
                     interface->crtkInterface->add_servo_cp(objectName);
                     interface->crtkInterface->add_servo_cf(objectName);
-                    interface->m_measuredCPRBsPtr.push_back(rigidBodyPtr); 
-                    interface->m_measuredCFRBsPtr.push_back(rigidBodyPtr); 
-                    interface->m_servoCPRBsPtr.push_back(rigidBodyPtr); 
-                    interface->m_servoCFRBsPtr.push_back(rigidBodyPtr); 
+
+                    interface->m_measuredCPRBsPtr[objectName] = rigidBodyPtr; 
+                    interface->m_measuredCFRBsPtr[objectName] = rigidBodyPtr; 
+                    interface->m_servoCPRBsPtr[objectName] = rigidBodyPtr; 
+                    interface->m_servoCFRBsPtr[objectName] = rigidBodyPtr; 
                 }
 
                 if (it_child->second->getType() == afType::JOINT){
@@ -185,8 +186,8 @@ int afCRTKSimulatorPlugin::loadCRTKInterfaceFromSimulator(){
                 if (it_child->second->getType() == afType::LIGHT){
                     afBaseObjectPtr objectPtr = afSimulatorPlugin::m_worldPtr->getLight(wholeName);
                     objectName = regex_replace(objectName, regex{" "}, string{"_"});
-                    interface->m_measuredObjectPtr.push_back(objectPtr);
-                    interface->m_servoObjectPtr.push_back(objectPtr);
+                    interface->m_measuredObjectPtr[objectName] = objectPtr;
+                    interface->m_servoObjectPtr[objectName] = objectPtr;
                     interface->crtkInterface->add_measured_cp(objectName);
                     interface->crtkInterface->add_servo_cp(objectName);
                 }
@@ -194,8 +195,8 @@ int afCRTKSimulatorPlugin::loadCRTKInterfaceFromSimulator(){
                 if (it_child->second->getType() == afType::CAMERA){
                     afBaseObjectPtr objectPtr = afSimulatorPlugin::m_worldPtr->getCamera(wholeName);
                     objectName = regex_replace(objectName, regex{" "}, string{"_"});
-                    interface->m_measuredObjectPtr.push_back(objectPtr);
-                    interface->m_servoObjectPtr.push_back(objectPtr);
+                    interface->m_measuredObjectPtr[objectName] = objectPtr;
+                    interface->m_servoObjectPtr[objectName] = objectPtr;
                     interface->crtkInterface->add_measured_cp(objectName);
                     interface->crtkInterface->add_servo_cp(objectName);
                 }
