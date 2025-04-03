@@ -10,6 +10,7 @@ psm1:
   measured_cp: [
     {
       rigidbody: psm1/BODY tool yaw link,
+      namespace: /PSM1/,
       reference: CameraFrame
     },
     # {
