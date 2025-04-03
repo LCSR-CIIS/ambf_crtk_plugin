@@ -10,7 +10,7 @@ psm1:
   measured_cp: [
     {
       rigidbody: psm1/BODY tool yaw link,
-      namespace: /PSM1/,
+      namespace: /PSM1/, # [Optional] Override namespace "/PSM1/measured_cp"
       reference: CameraFrame
     },
     # {
@@ -22,7 +22,7 @@ psm1:
   setpoint_cp: [
     {
       rigidbody: psm1/BODY tool yaw link,
-      namespace: /PSM1/,
+      namespace: /PSM1/, # [Optional] Override namespace "/PSM1/measured_cp"
       reference: CameraFrame
     }
   ]
@@ -39,7 +39,7 @@ psm1:
   [
     {
       rigidbody: psm1/BODY tool yaw link,
-      namespace: /PSM1/,
+      namespace: /PSM1/, # [Optional] Override namespace "/PSM1/measured_cp"
       reference: CameraFrame
     }
   ]

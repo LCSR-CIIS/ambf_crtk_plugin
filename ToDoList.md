@@ -8,3 +8,6 @@
 Add FK, IK for the robot
 
 - [x] Add multiple checking functionality for measured_cp
+- [] Check the servo_cp
+- [] Add ECM model
+- [] Documentation
