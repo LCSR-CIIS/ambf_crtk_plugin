@@ -22,6 +22,7 @@ psm1:
   setpoint_cp: [
     {
       rigidbody: psm1/BODY tool yaw link,
+      namespace: /PSM1/,
       reference: CameraFrame
     }
   ]
@@ -37,7 +38,9 @@ psm1:
   servo_cp:
   [
     {
-      rigidbody: psm1/BODY tool yaw link
+      rigidbody: psm1/BODY tool yaw link,
+      namespace: /PSM1/,
+      reference: CameraFrame
     }
   ]
 

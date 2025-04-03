@@ -233,7 +233,7 @@ int afCRTKBasePlugin::InitInterface(YAML::Node& node, Interface* interface){
                 }
 
                 if(node[interface->m_name]["servo_cp"][i]["namespace"]){
-                    nspace = node[interface->m_name]["servo_cp"][i]["rigidbody"]["namespace"].as<string>();
+                    nspace = node[interface->m_name]["servo_cp"][i]["namespace"].as<string>();
                     interface->m_servoCPRBsPtr[nspace] = rigidBodyPtr;
 
                     if (interface->m_referenceServoPtr){
