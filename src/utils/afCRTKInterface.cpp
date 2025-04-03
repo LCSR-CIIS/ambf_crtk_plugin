@@ -245,8 +245,9 @@ bool afCRTKInterface::servo_cf(vector<double> & cf){
 }
 
 void afCRTKInterface::run_operating_state(){
+    ambf_ral::spin_some(m_rosNode);
     m_operatingState.state = "ENABLED";
-    m_operatingState.is_homed = false;
+    m_operatingState.is_homed = true;
     m_operatingState.is_busy = false;
 
     #if AMBF_ROS1
