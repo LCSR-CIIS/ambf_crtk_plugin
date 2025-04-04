@@ -94,6 +94,19 @@ void afCRTKInterface::add_operating_state(string a_namespace){
     // m_operatingStatePub = m_rosNode->advertise<crtk_msgs::OperatingState>(baseName + "/operating_state", 1);
 }
 
+void afCRTKInterface::add_state_command(string a_namespace){
+    string baseName;
+    if(a_namespace == ""){
+        baseName = m_nameSpace;
+    }
+    else{
+        baseName = a_namespace;
+    }
+    ambf_ral::create_publisher<AMBF_RAL_MSG(crtk_msgs, StringStamped)>
+      (m_stateCommandPub, m_rosNode, baseName + "/state_command", 1, false);
+      
+    // m_operatingStatePub = m_rosNode->advertise<crtk_msgs::OperatingState>(baseName + "/operating_state", 1);
+}
 
 void afCRTKInterface::add_measured_cp(string a_namespace){
     string baseName;
@@ -146,6 +159,7 @@ void afCRTKInterface::add_measured_js(string a_namespace, vector<string> jointNa
     for (size_t i = 0; i < jointNames.size(); i++){
         m_measured_js.name.push_back(jointNames[i]);
     }
+    m_measuredJSPubMap[baseName] = m_measuredJSPub;
 }
 
 
@@ -191,6 +205,7 @@ void afCRTKInterface::add_servo_jp(string a_namespace){
     ambf_ral::create_subscriber<AMBF_RAL_MSG(sensor_msgs, JointState), afCRTKInterface>
       (m_servoJPSub, m_rosNode, baseName + "/servo_jp", 1, &afCRTKInterface::servo_JPCallback, this);
     // m_servoJPSub = m_rosNode->subscribe(baseName + "/servo_jp", 1, &afCRTKInterface::servo_JPCallback, this);
+    m_servoJPSubMap[baseName] = m_servoJPSub;
 }
 
 
@@ -275,6 +290,15 @@ void afCRTKInterface::run_operating_state(){
     #endif
 }
 
+void afCRTKInterface::run_state_command(){
+    m_state_command.string = "enable";
+    #if AMBF_ROS1
+        m_stateCommandPub.publish(m_state_command);
+    #elif AMBF_ROS2
+        m_stateCommandPub->publish(m_state_command);
+    #endif
+
+}
 
 void afCRTKInterface::measured_cp(cTransform &trans, string name){
     
@@ -338,7 +362,7 @@ void afCRTKInterface::setpoint_cp(cTransform &trans, string name){
 }
 
 
-void afCRTKInterface::measured_js(vector<double>& q){
+void afCRTKInterface::measured_js(vector<double>& q, string name){
     if (q.size() > m_measured_js.name.size()){
         cerr << "ERROR! IN Measured JS, JOINT LENGTH MUST BE " << m_measured_js.name.size() << endl;
         return;
@@ -349,9 +373,19 @@ void afCRTKInterface::measured_js(vector<double>& q){
         m_measured_js.position.push_back(q[idx]);
     }
     #if AMBF_ROS1
+    if (name == "default"){
         m_measuredJSPub.publish(m_measured_js);
+    }
+    else{
+        m_measuredJSPubMap[name].publish(m_measured_js);
+    }  
     #elif AMBF_ROS2
+    if (name == "default"){
         m_measuredJSPub->publish(m_measured_js);
+    }
+    else{
+        m_measuredJSPubMap[name]->publish(m_measured_js);
+    }  
     #endif
     
 }

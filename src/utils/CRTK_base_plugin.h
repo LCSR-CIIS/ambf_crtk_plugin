@@ -74,8 +74,7 @@ class Interface{
 
         // AMBF Pointer
         // Joint related Pointers
-        vector<afJointPtr> m_measuredJointsPtr, m_servoJointsPtr;
-        vector<afJointPtr> m_measuredCPJointsPtr, m_servoCPJointsPtr;
+        map<string, vector<afJointPtr>> m_measuredJointsPtr, m_servoJointsPtr;
         
         // RigidBody Pointers
         map<string, afRigidBodyPtr> m_measuredCPRBsPtr, m_setpointCPRBsPtr, m_measuredCFRBsPtr, m_servoCPRBsPtr, m_servoCFRBsPtr;
@@ -94,6 +93,7 @@ class afCRTKBasePlugin{
     protected:
         int readConfigFile(string config_filepath);
         int InitInterface(YAML::Node& node, Interface* interface);
+        void runStateCommand(Interface* interface);
         void runOperatingState(Interface* interface);   
         void runMeasuredCP(Interface* interface);
         void runSetpointCP(Interface* interface);

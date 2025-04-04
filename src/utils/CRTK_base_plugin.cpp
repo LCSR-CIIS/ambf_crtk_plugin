@@ -69,8 +69,9 @@ int afCRTKBasePlugin::readConfigFile(string config_filepath){
 }
 
 int afCRTKBasePlugin::InitInterface(YAML::Node& node, Interface* interface){
-    // Add operating state
+    // Add operating state and state command
     interface->crtkInterface->add_operating_state("");
+    interface->crtkInterface->add_state_command("");
     string nspace;
     
     if (node[interface->m_name]["measured_cp"]){
@@ -172,16 +173,24 @@ int afCRTKBasePlugin::InitInterface(YAML::Node& node, Interface* interface){
     if (node[interface->m_name]["measured_js"]){
         vector<string> jointNames;
         cerr << "[INFO!] Adding measured_js ... " << endl;
-        for (size_t j = 0; j < node[interface->m_name]["measured_js"]["joints"].size(); j++){
-            string jointName = node[interface->m_name]["measured_js"]["joints"][j].as<string>();
-            interface->m_measuredJointsPtr.push_back(m_worldPtr->getJoint(jointName));
-            jointNames.push_back(jointName);
-        }
+        vector<afJointPtr> jointsPtr;
 
-        if(node[interface->m_name]["measured_js"]["namespace"])
-            interface->crtkInterface->add_measured_js(node[interface->m_name]["measured_js"]["namespace"].as<string>(), jointNames);
-        else
-            interface->crtkInterface->add_measured_js("", jointNames);
+        for (size_t i = 0; i < node[interface->m_name]["measured_js"].size(); i++){
+            for (size_t j = 0; j < node[interface->m_name]["measured_js"][i]["joints"].size(); j++){
+                string jointName = node[interface->m_name]["measured_js"][i]["joints"][j].as<string>();
+                jointNames.push_back(jointName);
+                jointsPtr.push_back(m_worldPtr->getJoint(jointName));
+            }
+
+            if(node[interface->m_name]["measured_js"][i]["namespace"]){
+                nspace = node[interface->m_name]["measured_js"]["namespace"].as<string>();
+            }
+            else{
+                nspace = interface->m_name;
+            }
+            interface->m_measuredJointsPtr[nspace] = (jointsPtr);
+            interface->crtkInterface->add_measured_js(nspace, jointNames);
+        }
     }
 
     if (node[interface->m_name]["measured_cf"]){
@@ -198,15 +207,13 @@ int afCRTKBasePlugin::InitInterface(YAML::Node& node, Interface* interface){
 
                 if(node[interface->m_name]["measured_cf"]["namespace"]){
                     nspace = node[interface->m_name]["measured_cf"][j]["namespace"].as<string>();
-                    interface->m_measuredCFRBsPtr[nspace] = (rigidBodyPtr);
-                    interface->crtkInterface->add_measured_cf(nspace);
                 }
                 else{
                     rigidName = getNamefromPtr((afBaseObjectPtr)rigidBodyPtr);
-                    nspace = interface->m_name + "/" + rigidName;
-                    interface->m_measuredCFRBsPtr[nspace] = (rigidBodyPtr);
-                    interface->crtkInterface->add_measured_cf(nspace);                    
+                    nspace = interface->m_name + "/" + rigidName;                
                 }
+                interface->m_measuredCFRBsPtr[nspace] = (rigidBodyPtr);
+                interface->crtkInterface->add_measured_cf(nspace);    
             }
         }
 
@@ -266,16 +273,23 @@ int afCRTKBasePlugin::InitInterface(YAML::Node& node, Interface* interface){
     if (node[interface->m_name]["servo_jp"]){
         cerr << "[INFO!] Adding servo_jp ... " << endl;
         vector<string> jointNames;
-        for (size_t j = 0; j < node[interface->m_name]["servo_jp"]["joints"].size(); j++){
-            string jointName = node[interface->m_name]["servo_jp"]["joints"][j].as<string>();
-            jointNames.push_back(jointName);
-            interface->m_servoJointsPtr.push_back(m_worldPtr->getJoint(jointName));
-        }
+        vector<afJointPtr> jointsPtr;
+        for (size_t i = 0; i < node[interface->m_name]["servo_jp"].size(); i++){
+            for (size_t j = 0; j < node[interface->m_name]["servo_jp"][i]["joints"].size(); j++){
+                string jointName = node[interface->m_name]["servo_jp"][i]["joints"][j].as<string>();
+                jointNames.push_back(jointName);
+                jointsPtr.push_back(m_worldPtr->getJoint(jointName));
+            }
 
-        if(node[interface->m_name]["servo_jp"]["namespace"])
-            interface->crtkInterface->add_servo_jp(node[interface->m_name]["servo_jp"]["namespace"].as<string>());
-        else
-            interface->crtkInterface->add_servo_jp("");
+            if(node[interface->m_name]["servo_jp"][i]["namespace"]){
+                nspace = node[interface->m_name]["servo_jp"]["namespace"].as<string>();
+            }
+            else{
+                nspace = interface->m_name;
+            }
+            interface->m_servoJointsPtr[nspace] = jointsPtr;
+            interface->crtkInterface->add_servo_jp(nspace);
+        }        
     }
 
     if (node[interface->m_name]["servo_cf"]){
@@ -291,15 +305,13 @@ int afCRTKBasePlugin::InitInterface(YAML::Node& node, Interface* interface){
                 
                 if(node[interface->m_name]["servo_cf"]["namespace"]){
                     nspace = node[interface->m_name]["servo_cf"][j]["namespace"].as<string>();
-                    interface->m_servoCFRBsPtr[nspace] = rigidBodyPtr;
-                    interface->crtkInterface->add_servo_cf(nspace);
                 }
                 else{
                     rigidName = getNamefromPtr((afBaseObjectPtr)rigidBodyPtr);
                     nspace = interface->m_name + "/" + rigidName;
-                    interface->m_servoCFRBsPtr[nspace] = rigidBodyPtr;
-                    interface->crtkInterface->add_servo_cf(nspace);
                 }
+                interface->m_servoCFRBsPtr[nspace] = rigidBodyPtr;
+                interface->crtkInterface->add_servo_cf(nspace);
             }
         }
 
@@ -317,6 +329,10 @@ int afCRTKBasePlugin::InitInterface(YAML::Node& node, Interface* interface){
 
 void afCRTKBasePlugin::runOperatingState(Interface* interface){
     interface->crtkInterface->run_operating_state();
+}
+
+void afCRTKBasePlugin::runStateCommand(Interface* interface){
+    interface->crtkInterface->run_state_command();
 }
 
 void afCRTKBasePlugin::runMeasuredCP(Interface* interface){
@@ -408,12 +424,14 @@ void afCRTKBasePlugin::runSetpointCP(Interface* interface){
 void afCRTKBasePlugin::runMeasuredJS(Interface* interface){
     // measured_js
     if (interface->m_measuredJointsPtr.size() > 0){
-        vector<double> measured_js;
-        for  (size_t i = 0; i < interface->m_measuredJointsPtr.size(); i++){
-            double jointPos = interface->m_measuredJointsPtr[i]->getPosition();
-            measured_js.push_back(jointPos);
+        for (const auto& pairNamePtr : interface->m_measuredJointsPtr){
+            vector<double> measured_js;
+            for  (size_t i = 0; i < pairNamePtr.second.size(); i++){
+                double jointPos = pairNamePtr.second[i]->getPosition();
+                measured_js.push_back(jointPos);
+            }
+            interface->crtkInterface->measured_js(measured_js, pairNamePtr.first);
         }
-        interface->crtkInterface->measured_js(measured_js);
     }
 }
 
@@ -488,9 +506,12 @@ void afCRTKBasePlugin::runServoJP(Interface* interface){
     if (interface->m_servoJointsPtr.size() > 0){
         vector<double> servo_jp;
         if(interface->crtkInterface->servo_jp(servo_jp)){
-            for  (size_t i = 0; i < interface->m_servoJointsPtr.size(); i++){
-                if(interface->m_servoJointsPtr[i]){
-                    interface->m_servoJointsPtr[i]->commandPosition(servo_jp[i]);
+
+            for (const auto& pairNamePtr : interface->m_servoJointsPtr) {
+                for  (size_t i = 0; i < pairNamePtr.second.size(); i++){
+                    if(pairNamePtr.second[i]){
+                        pairNamePtr.second[i]->commandPosition(servo_jp[i]);
+                    }
                 }
             }
         }

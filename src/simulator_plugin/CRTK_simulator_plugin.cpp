@@ -104,6 +104,7 @@ void afCRTKSimulatorPlugin::physicsUpdate(double dt){
     // Loop for all the interface
     for (Interface* interface:m_interface){
         runOperatingState(interface);
+        runStateCommand(interface);
         runMeasuredCP(interface);
         runSetpointCP(interface);
         runMeasuredJS(interface);
@@ -123,6 +124,9 @@ int afCRTKSimulatorPlugin::loadCRTKInterfaceFromSimulator(){
         //ChildrenMap: map<map<afType, map<string, afBaseObject*> >
         afChildrenMap::iterator cIt;
         afChildrenMap* childrenMap = it->second->getChildrenMap();
+
+        vector<afJointPtr> measured_js;
+        vector<afJointPtr> servo_jp;
         for(cIt = childrenMap->begin(); cIt != childrenMap->end(); ++cIt){   
             for (auto it_child=cIt->second.begin(); it_child != cIt->second.end(); ++it_child){
                 string wholeName = it_child->first;
@@ -179,8 +183,8 @@ int afCRTKSimulatorPlugin::loadCRTKInterfaceFromSimulator(){
                 if (it_child->second->getType() == afType::JOINT){
                     afJointPtr jointPtr = afSimulatorPlugin::m_worldPtr->getJoint(wholeName);
                     objectName = regex_replace(objectName, regex{" "}, string{"_"});
-                    interface->m_measuredJointsPtr.push_back(jointPtr);
-                    interface->m_servoJointsPtr.push_back(jointPtr);
+                    measured_js.push_back(jointPtr);
+                    servo_jp.push_back(jointPtr);
                 }
 
                 if (it_child->second->getType() == afType::LIGHT){
@@ -201,7 +205,10 @@ int afCRTKSimulatorPlugin::loadCRTKInterfaceFromSimulator(){
                     interface->crtkInterface->add_servo_cp(objectName);
                 }
             }
+
+            interface->m_measuredJP
         }
+
     }
     vector<string> jointNames;
     for (size_t i = 0; i < m_interface.size(); i ++){

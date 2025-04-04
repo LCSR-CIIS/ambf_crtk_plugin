@@ -1,12 +1,13 @@
-# AMBF CRTK configuration file template for CRTK_simulator_plugin
+# AMBF CRTK configuration file template for CRTK_model_plugin
 # Author: Hisashi Ishida
-# Date: 03.14.2024
-# Usage: add the path (build/lib_CRTK_simulator_plugin.so) and add --conf ../example/SRC_config.yaml
+# Date: 04.04.2025
+
+
 # Interfaces used for this plugin
 interface:
-- psm1
+- PSM1
 
-psm1:
+PSM1:
   measured_cp: [
     {
       rigidbody: psm1/BODY tool yaw link,
@@ -27,14 +28,27 @@ psm1:
     }
   ]
 
-  measured_js:
-    joints:
-    - psm1/JOINT pitch end link-main insertion link
-    - psm1/JOINT main insertion link-tool roll link
-    - psm1/JOINT tool roll link-tool pitch link
-    - psm1/JOINT tool pitch link-tool yaw link
-    - psm1/JOINT tool yaw link-tool gripper left link
-    - psm1/JOINT tool yaw link-tool gripper right link
+  measured_js: [
+    {
+      namespace: /PSM1,
+      joints: [
+        psm1/JOINT pitch end link-main insertion link,
+        psm1/JOINT main insertion link-tool roll link,
+        psm1/JOINT tool roll link-tool pitch link,
+        psm1/JOINT tool pitch link-tool yaw link,
+        psm1/JOINT tool yaw link-tool gripper left link,
+        psm1/JOINT tool yaw link-tool gripper right link,
+      ]
+    },
+    {
+      joints: [
+        psm1/JOINT tool yaw link-tool gripper left link,
+        psm1/JOINT tool yaw link-tool gripper right link,
+      ],
+      namespace: /PSM1/gripper
+    }
+  ]
+    
   servo_cp:
   [
     {
