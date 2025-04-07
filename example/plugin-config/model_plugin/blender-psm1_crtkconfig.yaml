@@ -1,0 +1,95 @@
+# AMBF CRTK configuration file template for CRTK_model_plugin
+# Author: Hisashi Ishida
+# Date: 04.04.2025
+
+
+# Interfaces used for this plugin
+interface:
+- PSM1
+
+PSM1:
+  measured_cp: [
+    {
+      rigidbody: psm1/BODY yaw link,
+      namespace: /PSM1/, # [Optional] Override namespace "/PSM1/measured_cp"
+      reference: CameraFrame
+    },
+    # {
+    #   rigidbody: psm1/BODY base link,
+    #   reference: CameraFrame
+    # }
+  ]
+
+  setpoint_cp: [
+    {
+      rigidbody: psm1/BODY yaw link,
+      namespace: /PSM1/, # [Optional] Override namespace "/PSM1/measured_cp"
+      reference: CameraFrame
+    }
+  ]
+
+  measured_js: [
+    {
+      namespace: /PSM1,
+      joints: [
+        psm1/JOINT base link-yaw link,
+        psm1/JOINT main insertion link-tool roll link,
+        psm1/JOINT pitch back link-pitch bottom link,
+        psm1/JOINT pitch back link-pitch top link,
+        psm1/JOINT pitch bottom link-pitch end link,
+        psm1/JOINT pitch end link-main insertion link,
+        psm1/JOINT pitch front link-pitch bottom link,
+        psm1/JOINT pitch top link-pitch end link,
+
+        psm1/JOINT tool roll link-tool pitch link,
+        psm1/JOINT yaw link-pitch back link,
+        psm1/JOINT yaw link-pitch end link,
+        psm1/JOINT yaw link-pitch front link,
+      ]
+    },
+    {
+      joints: [
+        psm1/JOINT tool pitch link-tool gripper1 link,
+        psm1/JOINT tool pitch link-tool gripper2 link,
+      ],
+      namespace: /PSM1/gripper
+    }
+  ]
+    
+  servo_cp:
+  [
+    {
+      rigidbody: psm1/BODY yaw link,
+      namespace: /PSM1/, # [Optional] Override namespace "/PSM1/measured_cp"
+      reference: CameraFrame
+    }
+  ]
+
+  servo_jp: [
+    {
+      namespace: /PSM1,
+      joints: [
+        psm1/JOINT base link-yaw link,
+        psm1/JOINT main insertion link-tool roll link,
+        psm1/JOINT pitch back link-pitch bottom link,
+        psm1/JOINT pitch back link-pitch top link,
+        psm1/JOINT pitch bottom link-pitch end link,
+        psm1/JOINT pitch end link-main insertion link,
+        psm1/JOINT pitch front link-pitch bottom link,
+        psm1/JOINT pitch top link-pitch end link,
+
+        psm1/JOINT tool roll link-tool pitch link,
+        psm1/JOINT yaw link-pitch back link,
+        psm1/JOINT yaw link-pitch end link,
+        psm1/JOINT yaw link-pitch front link,
+      ]
+    },
+    {
+      joints: [
+        psm1/JOINT tool pitch link-tool gripper1 link,
+        psm1/JOINT tool pitch link-tool gripper2 link,
+      ],
+      namespace: /PSM1/gripper
+    }
+  ]
+    
