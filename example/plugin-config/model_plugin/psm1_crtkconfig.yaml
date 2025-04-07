@@ -58,11 +58,25 @@ PSM1:
     }
   ]
 
-  servo_jp:
-    joints:
-    - psm1/JOINT pitch end link-main insertion link
-    - psm1/JOINT main insertion link-tool roll link
-    - psm1/JOINT tool roll link-tool pitch link
-    - psm1/JOINT tool pitch link-tool yaw link
-    - psm1/JOINT tool yaw link-tool gripper left link
-    - psm1/JOINT tool yaw link-tool gripper right link
+  servo_jp: [
+    {
+      joints: [
+        psm1/JOINT pitch end link-main insertion link,
+        psm1/JOINT main insertion link-tool roll link,
+        psm1/JOINT tool roll link-tool pitch link,
+        psm1/JOINT tool pitch link-tool yaw link,
+        psm1/JOINT tool yaw link-tool gripper left link,
+        psm1/JOINT tool yaw link-tool gripper right link,
+      ],
+      namespace: /PSM1/,
+    }, 
+    {
+      joints: [
+        psm1/JOINT tool yaw link-tool gripper left link,
+        psm1/JOINT tool yaw link-tool gripper right link,
+      ],
+      namespace: /PSM1/gripper,
+    }, 
+
+  ]
+    

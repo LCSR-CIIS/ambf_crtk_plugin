@@ -270,7 +270,6 @@ int afCRTKBasePlugin::InitInterface(YAML::Node& node, Interface* interface){
                 return -1;
             }
         }
-
     }
 
     if (node[interface->m_name]["servo_jp"]){
@@ -285,7 +284,7 @@ int afCRTKBasePlugin::InitInterface(YAML::Node& node, Interface* interface){
             }
 
             if(node[interface->m_name]["servo_jp"][i]["namespace"]){
-                nspace = node[interface->m_name]["servo_jp"]["namespace"].as<string>();
+                nspace = node[interface->m_name]["servo_jp"][i]["namespace"].as<string>();
             }
             else{
                 nspace = interface->m_name;
@@ -317,16 +316,13 @@ int afCRTKBasePlugin::InitInterface(YAML::Node& node, Interface* interface){
                 interface->crtkInterface->add_servo_cf(nspace);
             }
         }
-
         else{  
             cerr << ">> ERROR!! No RigidBody specified for servo_cp" << endl;
             return -1;
         }
     }
-
     cerr << "Successfully initialized interface" << endl;
     return 1;
-
 }
 
 
@@ -454,7 +450,6 @@ void afCRTKBasePlugin::runMeasuredCF(Interface* interface){
 }
 
 
-
 void afCRTKBasePlugin::runServoCP(Interface* interface, double dt){
     // servo_cp
     if (interface->m_servoCPRBsPtr.size() > 0){
@@ -512,7 +507,6 @@ void afCRTKBasePlugin::runServoJP(Interface* interface){
     if (interface->m_servoJointsPtr.size() > 0){
         vector<double> servo_jp;
         if(interface->crtkInterface->servo_jp(servo_jp)){
-
             for (const auto& pairNamePtr : interface->m_servoJointsPtr) {
                 for  (size_t i = 0; i < pairNamePtr.second.size(); i++){
                     if(pairNamePtr.second[i]){
