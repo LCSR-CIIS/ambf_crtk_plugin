@@ -183,8 +183,8 @@ int afCRTKSimulatorPlugin::loadCRTKInterfaceFromSimulator(){
                 if (it_child->second->getType() == afType::JOINT){
                     afJointPtr jointPtr = afSimulatorPlugin::m_worldPtr->getJoint(wholeName);
                     objectName = regex_replace(objectName, regex{" "}, string{"_"});
-                    measured_js.push_back(jointPtr);
-                    servo_jp.push_back(jointPtr);
+                    interface->m_measuredJointsPtr[ns].push_back(jointPtr);
+                    interface->m_servoJointsPtr[ns].push_back(jointPtr);
                 }
 
                 if (it_child->second->getType() == afType::LIGHT){
@@ -205,16 +205,16 @@ int afCRTKSimulatorPlugin::loadCRTKInterfaceFromSimulator(){
                     interface->crtkInterface->add_servo_cp(objectName);
                 }
             }
-
-            interface->m_measuredJP
         }
 
     }
     vector<string> jointNames;
     for (size_t i = 0; i < m_interface.size(); i ++){
         if(m_interface[i]->m_measuredJointsPtr.size() > 0){
-            for (size_t j = 0; j < m_interface[i]->m_measuredJointsPtr.size(); j++){
-                jointNames.push_back(getNamefromPtr((afBaseObjectPtr)m_interface[i]->m_measuredJointsPtr[j]));
+            for (auto pairNamePtr: m_interface[i]->m_measuredJointsPtr){
+                for (size_t j = 0; j < pairNamePtr.second.size(); j++){
+                    jointNames.push_back(getNamefromPtr((afBaseObjectPtr)pairNamePtr.second[j]));
+                }
             }
             m_interface[i]->crtkInterface->add_measured_js("", jointNames);
             m_interface[i]->crtkInterface->add_servo_jp("");

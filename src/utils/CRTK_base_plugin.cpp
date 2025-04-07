@@ -176,6 +176,9 @@ int afCRTKBasePlugin::InitInterface(YAML::Node& node, Interface* interface){
         vector<afJointPtr> jointsPtr;
 
         for (size_t i = 0; i < node[interface->m_name]["measured_js"].size(); i++){
+            jointNames.clear();
+            jointsPtr.clear();
+
             for (size_t j = 0; j < node[interface->m_name]["measured_js"][i]["joints"].size(); j++){
                 string jointName = node[interface->m_name]["measured_js"][i]["joints"][j].as<string>();
                 jointNames.push_back(jointName);
@@ -183,7 +186,7 @@ int afCRTKBasePlugin::InitInterface(YAML::Node& node, Interface* interface){
             }
 
             if(node[interface->m_name]["measured_js"][i]["namespace"]){
-                nspace = node[interface->m_name]["measured_js"]["namespace"].as<string>();
+                nspace = node[interface->m_name]["measured_js"][i]["namespace"].as<string>();
             }
             else{
                 nspace = interface->m_name;
@@ -423,14 +426,17 @@ void afCRTKBasePlugin::runSetpointCP(Interface* interface){
 
 void afCRTKBasePlugin::runMeasuredJS(Interface* interface){
     // measured_js
+    vector<string> jointName;
     if (interface->m_measuredJointsPtr.size() > 0){
         for (const auto& pairNamePtr : interface->m_measuredJointsPtr){
+            jointName.clear();
             vector<double> measured_js;
             for  (size_t i = 0; i < pairNamePtr.second.size(); i++){
                 double jointPos = pairNamePtr.second[i]->getPosition();
                 measured_js.push_back(jointPos);
+                jointName.push_back(pairNamePtr.second[i]->getName());
             }
-            interface->crtkInterface->measured_js(measured_js, pairNamePtr.first);
+            interface->crtkInterface->measured_js(measured_js, jointName, pairNamePtr.first);
         }
     }
 }

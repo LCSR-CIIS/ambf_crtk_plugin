@@ -107,7 +107,7 @@ public:
     void run_state_command();
     void measured_cp(cTransform &trans, string name = "default");
     void setpoint_cp(cTransform &trans, string name = "default");
-    void measured_js(vector<double>& q, string name = "default");
+    void measured_js(vector<double>& q, vector<string> jointNames, string name = "default");
     void measured_cf(vector<double>& force, string name = "default");
 
     // Motion Command

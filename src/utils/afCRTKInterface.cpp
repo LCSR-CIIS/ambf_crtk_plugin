@@ -154,11 +154,7 @@ void afCRTKInterface::add_measured_js(string a_namespace, vector<string> jointNa
     ambf_ral::create_publisher<AMBF_RAL_MSG(sensor_msgs, JointState)>
       (m_measuredJSPub, m_rosNode, baseName + "/measured_js", 1, false);
     // m_measuredJSPub = m_rosNode->advertise<sensor_msgs::JointState>(baseName+ "/measured_js", 1);
-    
-    // Setup the joint names
-    for (size_t i = 0; i < jointNames.size(); i++){
-        m_measured_js.name.push_back(jointNames[i]);
-    }
+
     m_measuredJSPubMap[baseName] = m_measuredJSPub;
 }
 
@@ -362,16 +358,15 @@ void afCRTKInterface::setpoint_cp(cTransform &trans, string name){
 }
 
 
-void afCRTKInterface::measured_js(vector<double>& q, string name){
-    if (q.size() > m_measured_js.name.size()){
-        cerr << "ERROR! IN Measured JS, JOINT LENGTH MUST BE " << m_measured_js.name.size() << endl;
-        return;
-    }
+void afCRTKInterface::measured_js(vector<double>& q, vector<string> jointNames, string name){
     // Initialize the position value for the measured_js values
     m_measured_js.position.clear();
     for (int idx = 0 ; idx < q.size() ; idx++){
         m_measured_js.position.push_back(q[idx]);
     }
+
+    m_measured_js.name = jointNames;
+
     #if AMBF_ROS1
     if (name == "default"){
         m_measuredJSPub.publish(m_measured_js);

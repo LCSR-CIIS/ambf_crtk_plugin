@@ -23,14 +23,27 @@ psm2:
     }
   ]
   
-  measured_js:
-    joints:
-    - psm2/JOINT pitch end link-main insertion link
-    - psm2/JOINT main insertion link-tool roll link
-    - psm2/JOINT tool roll link-tool pitch link
-    - psm2/JOINT tool pitch link-tool yaw link
-    - psm2/JOINT tool yaw link-tool gripper left link
-    - psm2/JOINT tool yaw link-tool gripper right link
+  measured_js: [
+    {
+      joints: [
+        psm2/JOINT pitch end link-main insertion link,
+        psm2/JOINT main insertion link-tool roll link,
+        psm2/JOINT tool roll link-tool pitch link,
+        psm2/JOINT tool pitch link-tool yaw link,
+        psm2/JOINT tool yaw link-tool gripper left link,
+        psm2/JOINT tool yaw link-tool gripper right link,
+      ],
+      namespace: /PSM2/gripper
+
+    },
+    {
+      joints: [
+        psm2/JOINT tool yaw link-tool gripper left link,
+        psm2/JOINT tool yaw link-tool gripper right link,
+      ],
+      namespace: /PSM2/gripper
+    },
+  ]
 
   servo_cp:
   [
