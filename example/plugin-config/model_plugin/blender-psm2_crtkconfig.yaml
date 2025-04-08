@@ -11,7 +11,7 @@ PSM2:
     {
       rigidbody: psm2/BODY yaw link,
       namespace: /PSM2/, # [Optional] Override namespace "/psm2/measured_cp"
-      reference: CameraFrame
+      reference: BODY tool link
     },
     # {
     #   rigidbody: psm2/BODY base link,
@@ -23,7 +23,7 @@ PSM2:
     {
       rigidbody: psm2/BODY yaw link,
       namespace: /PSM2/, # [Optional] Override namespace "/psm2/measured_cp"
-      reference: CameraFrame
+      reference: BODY tool link
     }
   ]
 
@@ -60,7 +60,7 @@ PSM2:
     {
       rigidbody: psm2/BODY yaw link,
       namespace: /PSM2/, # [Optional] Override namespace "/psm2/measured_cp"
-      reference: CameraFrame
+      reference: BODY tool link
     }
   ]
 
