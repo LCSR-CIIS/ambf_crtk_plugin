@@ -1,0 +1,74 @@
+# AMBF CRTK configuration file template for CRTK_simulator_plugin
+# Author: Hisashi Ishida
+# Date: 03.14.2024
+# Usage: add the path (build/lib_CRTK_simulator_plugin.so) and add --conf ../example/SRC_config.yaml
+# Interfaces used for this plugin
+interface:
+- ECM
+
+ECM:
+  measured_cp: [
+    {
+      rigidbody: ecm/BODY yaw link,
+      namespace: /ECM/, # [Optional] Override namespace "/ecm/measured_cp"
+    },
+    # {
+    #   rigidbody: ecm/BODY base link,
+    #   reference: CameraFrame
+    # }
+  ]
+
+  setpoint_cp: [
+    {
+      rigidbody: ecm/BODY yaw link,
+      namespace: /ECM/, # [Optional] Override namespace "/ecm/measured_cp"
+    }
+  ]
+
+  measured_js: [
+    {
+      namespace: /ECM,
+      joints: [
+        ecm/JOINT base link-pitch end link,
+        ecm/JOINT base link-yaw link,
+        ecm/JOINT main insertion link-tool link,
+        ecm/JOINT pitch back link-pitch bottom link,
+        ecm/JOINT pitch bottom link-pitch end link,
+        ecm/JOINT pitch end link-main insertion link,
+        ecm/JOINT pitch front link-pitch bottom link,
+        ecm/JOINT pitch front link-pitch top link,
+        ecm/JOINT pitch top link-pitch end link,
+        ecm/JOINT yaw link-pitch back link,
+        ecm/JOINT yaw link-pitch front link,
+      ]
+    }
+  ]
+    
+  servo_cp:
+  [
+    {
+      rigidbody: ecm/BODY yaw link,
+      namespace: /ECM/, # [Optional] Override namespace "/ecm/measured_cp"
+      reference: CameraFrame
+    }
+  ]
+
+  servo_jp: [
+    {
+      namespace: /ECM,
+      joints: [
+        ecm/JOINT base link-pitch end link,
+        ecm/JOINT base link-yaw link,
+        ecm/JOINT main insertion link-tool link,
+        ecm/JOINT pitch back link-pitch bottom link,
+        ecm/JOINT pitch bottom link-pitch end link,
+        ecm/JOINT pitch end link-main insertion link,
+        ecm/JOINT pitch front link-pitch bottom link,
+        ecm/JOINT pitch front link-pitch top link,
+        ecm/JOINT pitch top link-pitch end link,
+        ecm/JOINT yaw link-pitch back link,
+        ecm/JOINT yaw link-pitch front link,
+      ]
+    }
+  ]
+    

@@ -74,14 +74,16 @@ class Interface{
 
         // AMBF Pointer
         // Joint related Pointers
-        vector<afJointPtr> m_measuredJointsPtr, m_servoJointsPtr;
-        vector<afJointPtr> m_measuredCPJointsPtr, m_servoCPJointsPtr;
+        map<string, vector<afJointPtr>> m_measuredJointsPtr, m_servoJointsPtr;
+        
         // RigidBody Pointers
-        vector<afRigidBodyPtr> m_measuredCPRBsPtr, m_measuredCFRBsPtr, m_servoCPRBsPtr, m_servoCFRBsPtr; 
+        map<string, afRigidBodyPtr> m_measuredCPRBsPtr, m_setpointCPRBsPtr, m_measuredCFRBsPtr, m_servoCPRBsPtr, m_servoCFRBsPtr;
+        
         // Non RigidBody Pointers
-        vector<afBaseObjectPtr> m_measuredObjectPtr, m_servoObjectPtr, m_measuredReferencePtr, m_servoReferencePtr;
+        map<string, afBaseObjectPtr> m_measuredObjectPtr, m_setpointObjectPtr, m_servoObjectPtr, m_measuredReferencePtr, m_servoReferencePtr;
+
         // Pointer for reference
-        afBaseObjectPtr m_referenceMeasuredPtr = nullptr, m_referenceServoPtr = nullptr;
+        afBaseObjectPtr m_referenceMeasuredPtr = nullptr, m_referenceSetpointPtr = nullptr, m_referenceServoPtr = nullptr;
 };
 
 class afCRTKBasePlugin{
@@ -91,8 +93,10 @@ class afCRTKBasePlugin{
     protected:
         int readConfigFile(string config_filepath);
         int InitInterface(YAML::Node& node, Interface* interface);
+        void runStateCommand(Interface* interface);
         void runOperatingState(Interface* interface);   
         void runMeasuredCP(Interface* interface);
+        void runSetpointCP(Interface* interface);
         void runMeasuredJS(Interface* interface);
         void runMeasuredCF(Interface* interface);
         void runServoCP(Interface* interface, double dt);

@@ -94,7 +94,9 @@ void afCRTKModelPlugin::physicsUpdate(double dt){
     if (m_isInitialized){
         for (Interface* interface:m_interface){
             runOperatingState(interface);
+            runStateCommand(interface);
             runMeasuredCP(interface);
+            runSetpointCP(interface);
             runMeasuredJS(interface);
             runMeasuredCF(interface);
             runServoCP(interface, dt);
@@ -154,24 +156,25 @@ int afCRTKModelPlugin::loadCRTKInterfacefromModel(){
                 interface->crtkInterface->add_measured_cf(objectName);
                 interface->crtkInterface->add_servo_cp(objectName);
                 interface->crtkInterface->add_servo_cf(objectName);
-                interface->m_measuredCPRBsPtr.push_back(rigidBodyPtr); 
-                interface->m_measuredCFRBsPtr.push_back(rigidBodyPtr); 
-                interface->m_servoCPRBsPtr.push_back(rigidBodyPtr); 
-                interface->m_servoCFRBsPtr.push_back(rigidBodyPtr); 
+
+                interface->m_measuredCPRBsPtr[objectName] = rigidBodyPtr;
+                interface->m_measuredCFRBsPtr[objectName] = rigidBodyPtr;
+                interface->m_servoCPRBsPtr[objectName] = rigidBodyPtr;
+                interface->m_servoCFRBsPtr[objectName] = rigidBodyPtr;
             }
 
             if (it_child->second->getType() == afType::JOINT){
                 afJointPtr jointPtr = m_worldPtr->getJoint(wholeName);
                 objectName = regex_replace(objectName, regex{" "}, string{"_"});
-                interface->m_measuredJointsPtr.push_back(jointPtr);
-                interface->m_servoJointsPtr.push_back(jointPtr);
+                interface->m_measuredJointsPtr[ns].push_back(jointPtr);
+                interface->m_servoJointsPtr[ns].push_back(jointPtr);
             }
 
             if (it_child->second->getType() == afType::LIGHT){
                 afBaseObjectPtr objectPtr = m_worldPtr->getLight(wholeName);
                 objectName = regex_replace(objectName, regex{" "}, string{"_"});
-                interface->m_measuredObjectPtr.push_back(objectPtr);
-                interface->m_servoObjectPtr.push_back(objectPtr);
+                interface->m_measuredObjectPtr[objectName] = objectPtr;
+                interface->m_servoObjectPtr[objectName] = objectPtr;
                 interface->crtkInterface->add_measured_cp(objectName);
                 interface->crtkInterface->add_servo_cp(objectName);
             }
@@ -179,8 +182,9 @@ int afCRTKModelPlugin::loadCRTKInterfacefromModel(){
             if (it_child->second->getType() == afType::CAMERA){
                 afBaseObjectPtr objectPtr = m_worldPtr->getCamera(wholeName);
                 objectName = regex_replace(objectName, regex{" "}, string{"_"});
-                interface->m_measuredObjectPtr.push_back(objectPtr);
-                interface->m_servoObjectPtr.push_back(objectPtr);
+
+                interface->m_measuredObjectPtr[objectName] = objectPtr;
+                interface->m_servoObjectPtr[objectName] = objectPtr;
                 interface->crtkInterface->add_measured_cp(objectName);
                 interface->crtkInterface->add_servo_cp(objectName);
             }
@@ -189,8 +193,10 @@ int afCRTKModelPlugin::loadCRTKInterfacefromModel(){
     vector<string> jointNames;
     for (size_t i = 0; i < m_interface.size(); i ++){
         if(m_interface[i]->m_measuredJointsPtr.size() > 0){
-            for (size_t j = 0; j < m_interface[i]->m_measuredJointsPtr.size(); j++){
-                jointNames.push_back(getNamefromPtr((afBaseObjectPtr)m_interface[i]->m_measuredJointsPtr[j]));
+            for (auto pairNamePtr: m_interface[i]->m_measuredJointsPtr){
+                for (int j; pairNamePtr.second.size(); j++){
+                    jointNames.push_back(getNamefromPtr((afBaseObjectPtr)pairNamePtr.second[j]));
+                }
             }
             m_interface[i]->crtkInterface->add_measured_js("", jointNames);
             m_interface[i]->crtkInterface->add_servo_jp("");

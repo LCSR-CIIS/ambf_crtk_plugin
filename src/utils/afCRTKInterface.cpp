@@ -61,6 +61,8 @@ void afCRTKInterface::init(string a_namespace){
 
 void afCRTKInterface::add_allInterface(string a_namespace){
     ambf_ral::create_publisher<AMBF_RAL_MSG(geometry_msgs, PoseStamped)>
+      (m_setpointCPPub, m_rosNode, m_nameSpace + "/setpoint_cp", 1, false);
+    ambf_ral::create_publisher<AMBF_RAL_MSG(geometry_msgs, PoseStamped)>
       (m_measuredCPPub, m_rosNode, m_nameSpace + "/measured_cp", 1, false);
     ambf_ral::create_publisher<AMBF_RAL_MSG(sensor_msgs, JointState)>
       (m_measuredJSPub, m_rosNode, m_nameSpace + "/measured_js", 1, false);
@@ -84,7 +86,7 @@ void afCRTKInterface::add_operating_state(string a_namespace){
         baseName = m_nameSpace;
     }
     else{
-        baseName = m_nameSpace + "/" + a_namespace;
+        baseName = a_namespace;
     }
     ambf_ral::create_publisher<AMBF_RAL_MSG(crtk_msgs, OperatingState)>
       (m_operatingStatePub, m_rosNode, baseName + "/operating_state", 1, false);
@@ -92,6 +94,19 @@ void afCRTKInterface::add_operating_state(string a_namespace){
     // m_operatingStatePub = m_rosNode->advertise<crtk_msgs::OperatingState>(baseName + "/operating_state", 1);
 }
 
+void afCRTKInterface::add_state_command(string a_namespace){
+    string baseName;
+    if(a_namespace == ""){
+        baseName = m_nameSpace;
+    }
+    else{
+        baseName = a_namespace;
+    }
+    ambf_ral::create_publisher<AMBF_RAL_MSG(crtk_msgs, StringStamped)>
+      (m_stateCommandPub, m_rosNode, baseName + "/state_command", 1, false);
+      
+    // m_operatingStatePub = m_rosNode->advertise<crtk_msgs::OperatingState>(baseName + "/operating_state", 1);
+}
 
 void afCRTKInterface::add_measured_cp(string a_namespace){
     string baseName;
@@ -99,12 +114,29 @@ void afCRTKInterface::add_measured_cp(string a_namespace){
         baseName = m_nameSpace;
     }
     else{
-        baseName = m_nameSpace + "/" + a_namespace;
+        baseName = a_namespace;
     }
     ambf_ral::create_publisher<AMBF_RAL_MSG(geometry_msgs, PoseStamped)>
       (m_measuredCPPub, m_rosNode, baseName + "/measured_cp", 1, false);
 
-    m_measuredCPPubMap[a_namespace] = m_measuredCPPub;
+    m_measuredCPPubMap[baseName] = m_measuredCPPub;
+    
+    // m_measuredCPPub = m_rosNode->advertise<geometry_msgs::PoseStamped>(baseName + "/measured_cp", 1);
+    // m_measuredCPPubMap[a_namespace] = m_rosNode->advertise<geometry_msgs::PoseStamped>(baseName + "/measured_cp", 1);
+}
+
+void afCRTKInterface::add_setpoint_cp(string a_namespace){
+    string baseName;
+    if(a_namespace == ""){
+        baseName = m_nameSpace;
+    }
+    else{
+        baseName = a_namespace;
+    }
+    ambf_ral::create_publisher<AMBF_RAL_MSG(geometry_msgs, PoseStamped)>
+      (m_setpointCPPub, m_rosNode, baseName + "/setpoint_cp", 1, false);
+
+    m_setpointCPPubMap[baseName] = m_setpointCPPub;
     
     // m_measuredCPPub = m_rosNode->advertise<geometry_msgs::PoseStamped>(baseName + "/measured_cp", 1);
     // m_measuredCPPubMap[a_namespace] = m_rosNode->advertise<geometry_msgs::PoseStamped>(baseName + "/measured_cp", 1);
@@ -117,16 +149,13 @@ void afCRTKInterface::add_measured_js(string a_namespace, vector<string> jointNa
         baseName = m_nameSpace;
     }
     else{
-        baseName = m_nameSpace + "/" + a_namespace;
+        baseName = a_namespace;
     }
     ambf_ral::create_publisher<AMBF_RAL_MSG(sensor_msgs, JointState)>
       (m_measuredJSPub, m_rosNode, baseName + "/measured_js", 1, false);
     // m_measuredJSPub = m_rosNode->advertise<sensor_msgs::JointState>(baseName+ "/measured_js", 1);
-    
-    // Setup the joint names
-    for (size_t i = 0; i < jointNames.size(); i++){
-        m_measured_js.name.push_back(jointNames[i]);
-    }
+
+    m_measuredJSPubMap[baseName] = m_measuredJSPub;
 }
 
 
@@ -136,12 +165,12 @@ void afCRTKInterface::add_measured_cf(string a_namespace){
         baseName = m_nameSpace;
     }
     else{
-        baseName = m_nameSpace + "/" + a_namespace;
+        baseName = a_namespace;
     }
     ambf_ral::create_publisher<AMBF_RAL_MSG(geometry_msgs, WrenchStamped)>
       (m_measuredCFPub, m_rosNode, baseName + "/measured_cf", 1, false);
     // m_measuredCFPub = m_rosNode->advertise<geometry_msgs::WrenchStamped>(baseName + "/measured_cf", 1);
-    m_measuredCFPubMap[a_namespace] = m_measuredCFPub; 
+    m_measuredCFPubMap[baseName] = m_measuredCFPub; 
 }
 
 
@@ -151,13 +180,14 @@ void afCRTKInterface::add_servo_cp(string a_namespace){
         baseName = m_nameSpace;
     }
     else{
-        baseName = m_nameSpace + "/" + a_namespace;
+        baseName = a_namespace;
     }
 
     ambf_ral::create_subscriber<AMBF_RAL_MSG(geometry_msgs, PoseStamped), afCRTKInterface>
       (m_servoCPSub, m_rosNode, baseName + "/servo_cp", 1, &afCRTKInterface::servo_CPCallback, this);
     // m_servoCPSub = m_rosNode->subscribe(baseName + "/servo_cp", 1, &afCRTKInterface::servo_CPCallback, this);
-    m_servoCPSubMap[a_namespace] = m_servoCPSub;
+
+    m_servoCPSubMap[baseName] = m_servoCPSub;
 }
 
 
@@ -167,11 +197,12 @@ void afCRTKInterface::add_servo_jp(string a_namespace){
         baseName = m_nameSpace;
     }
     else{
-        baseName = m_nameSpace + "/" + a_namespace;
+        baseName = a_namespace;
     }
     ambf_ral::create_subscriber<AMBF_RAL_MSG(sensor_msgs, JointState), afCRTKInterface>
       (m_servoJPSub, m_rosNode, baseName + "/servo_jp", 1, &afCRTKInterface::servo_JPCallback, this);
     // m_servoJPSub = m_rosNode->subscribe(baseName + "/servo_jp", 1, &afCRTKInterface::servo_JPCallback, this);
+    m_servoJPSubMap[baseName] = m_servoJPSub;
 }
 
 
@@ -181,12 +212,12 @@ void afCRTKInterface::add_servo_cf(string a_namespace){
         baseName = m_nameSpace;
     }
     else{
-        baseName = m_nameSpace + "/" + a_namespace;
+        baseName = a_namespace;
     }
     ambf_ral::create_subscriber<AMBF_RAL_MSG(geometry_msgs, WrenchStamped), afCRTKInterface>
       (m_servoCFSub, m_rosNode, baseName + "/servo_cf", 1, &afCRTKInterface::servo_CFCallback, this);
     // m_servoCFSub = m_rosNode->subscribe(baseName + "/servo_cf", 1 , &afCRTKInterface::servo_CFCallback, this);
-    m_servoCFSubMap[a_namespace] = m_servoCFSub;
+    m_servoCFSubMap[baseName] = m_servoCFSub;
 }
 
    
@@ -257,6 +288,15 @@ void afCRTKInterface::run_operating_state(){
     #endif
 }
 
+void afCRTKInterface::run_state_command(){
+    m_state_command.string = "enable";
+    #if AMBF_ROS1
+        m_stateCommandPub.publish(m_state_command);
+    #elif AMBF_ROS2
+        m_stateCommandPub->publish(m_state_command);
+    #endif
+
+}
 
 void afCRTKInterface::measured_cp(cTransform &trans, string name){
     
@@ -286,24 +326,63 @@ void afCRTKInterface::measured_cp(cTransform &trans, string name){
         m_measuredCPPubMap[name]->publish(m_measured_cp);
     }
     #endif
+}
+
+void afCRTKInterface::setpoint_cp(cTransform &trans, string name){
+    
+    m_setpoint_cp.pose.position.x = trans.getLocalPos().x();
+    m_setpoint_cp.pose.position.y = trans.getLocalPos().y();
+    m_setpoint_cp.pose.position.z = trans.getLocalPos().z();
+
+    cQuaternion rot;
+    rot.fromRotMat(trans.getLocalRot());
+    m_setpoint_cp.pose.orientation.x = rot.x;
+    m_setpoint_cp.pose.orientation.y = rot.y;
+    m_setpoint_cp.pose.orientation.z = rot.z;
+    m_setpoint_cp.pose.orientation.w = rot.w;
+
+    #if AMBF_ROS1
+    if (name == "default"){
+        m_setpointCPPub.publish(m_setpoint_cp);
+    }
+    else{
+        m_setpointCPPubMap[name].publish(m_setpoint_cp);
+    }
+    #elif AMBF_ROS2
+    if (name == "default"){
+        m_setpointCPPub->publish(m_setpoint_cp);
+    }
+    else{
+        m_setpointCPPubMap[name]->publish(m_setpoint_cp);
+    }
+    #endif
     
 }
 
 
-void afCRTKInterface::measured_js(vector<double>& q){
-    if (q.size() > m_measured_js.name.size()){
-        cerr << "ERROR! IN Measured JS, JOINT LENGTH MUST BE " << m_measured_js.name.size() << endl;
-        return;
-    }
+void afCRTKInterface::measured_js(vector<double>& q, vector<string> jointNames, string name){
     // Initialize the position value for the measured_js values
     m_measured_js.position.clear();
     for (int idx = 0 ; idx < q.size() ; idx++){
         m_measured_js.position.push_back(q[idx]);
     }
+
+    m_measured_js.name = jointNames;
+
     #if AMBF_ROS1
+    if (name == "default"){
         m_measuredJSPub.publish(m_measured_js);
+    }
+    else{
+        m_measuredJSPubMap[name].publish(m_measured_js);
+    }  
     #elif AMBF_ROS2
+    if (name == "default"){
         m_measuredJSPub->publish(m_measured_js);
+    }
+    else{
+        m_measuredJSPubMap[name]->publish(m_measured_js);
+    }  
     #endif
     
 }
