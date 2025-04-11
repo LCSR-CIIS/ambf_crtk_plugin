@@ -187,7 +187,6 @@ void afCRTKInterface::add_servo_cp(string a_namespace){
       (m_servoCPSub, m_rosNode, baseName + "/servo_cp", 1, &afCRTKInterface::servo_CPCallback, this);
     // m_servoCPSub = m_rosNode->subscribe(baseName + "/servo_cp", 1, &afCRTKInterface::servo_CPCallback, this);
 
-    cerr << "adding base name servo_cp" << baseName << endl;
     m_servoCPSubMap[baseName] = m_servoCPSub;
 }
 
