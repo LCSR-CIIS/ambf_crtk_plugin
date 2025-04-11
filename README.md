@@ -1,4 +1,5 @@
 # AMBF CRTK Plugin
+[Caution] `main/ros2` branch is for ROS2, if you are using ROS1, use `ros1` branch instead.
 This project is a plugin for Asynchronous Multibody Framework ([AMBF](https://github.com/WPI-AIM/ambf)) developed by Munawar et al. 
 This plugin will enable users to communicate with AMBF simulation using [Collaborative Robotics Toolkit(CRTK)](https://github.com/collaborative-robotics).
 
