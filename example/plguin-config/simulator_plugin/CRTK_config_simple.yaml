@@ -15,7 +15,7 @@ REMS/Research:
     {
       # Additonal namespace
       # rostopic name will be "REMS/Research/delta/measured_cp" 
-      namespace: delta,
+      namespace: REMS/Research/delta/measured_cp,
 
       # Name of Rigidbody in AMBF 
       rigidbody: Endoscope Tip

@@ -177,9 +177,9 @@ int afCRTKBasePlugin::InitInterface(YAML::Node& node, Interface* interface){
 
                 if(node[interface->m_name]["servo_cp"][i]["namespace"]){
                     if (interface->m_referenceServoPtr){
-                        interface->crtkInterface->add_servo_cp(node[interface->m_name]["servo_cp"][i]["rigidbody"]["namespace"].as<string>() + "/" + rigidName);
+                        interface->crtkInterface->add_servo_cp(node[interface->m_name]["servo_cp"][i]["namespace"].as<string>());
                     }
-                    interface->crtkInterface->add_servo_cp(node[interface->m_name]["servo_cp"][i]["rigidbody"]["namespace"].as<string>() + "/local/" + rigidName);
+                    interface->crtkInterface->add_servo_cp(node[interface->m_name]["servo_cp"][i]["namespace"].as<string>());
                 }
                 else{
                     if (interface->m_referenceServoPtr){
@@ -203,7 +203,14 @@ int afCRTKBasePlugin::InitInterface(YAML::Node& node, Interface* interface){
         for (size_t j = 0; j < node[interface->m_name]["servo_jp"]["joints"].size(); j++){
             string jointName = node[interface->m_name]["servo_jp"]["joints"][j].as<string>();
             jointNames.push_back(jointName);
-            interface->m_servoJointsPtr.push_back(m_worldPtr->getJoint(jointName));
+            if (jointName == ""){
+                cerr << ">> WARNING!! No Joint Name specified for servo_jp, skipping joint" << endl;
+                interface->m_servoJointsPtr.push_back(nullptr);
+            }
+            else{
+                interface->m_servoJointsPtr.push_back(m_worldPtr->getJoint(jointName));
+            }
+            
         }
 
         if(node[interface->m_name]["servo_jp"]["namespace"])

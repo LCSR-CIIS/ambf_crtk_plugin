@@ -62,7 +62,7 @@ void afCRTKInterface::init(string a_namespace){
 void afCRTKInterface::add_allInterface(string a_namespace){
     m_measuredCPPub = m_rosNode->advertise<geometry_msgs::PoseStamped>(m_nameSpace + "/measured_cp", 1);
     m_measuredJSPub = m_rosNode->advertise<sensor_msgs::JointState>(m_nameSpace+ "/measured_js", 1);
-    m_measuredCFPub = m_rosNode->advertise<geometry_msgs::WrenchStamped>(m_nameSpace + "measured_cf", 1);
+    m_measuredCFPub = m_rosNode->advertise<geometry_msgs::WrenchStamped>(m_nameSpace + "/measured_cf", 1);
     m_servoCPSub = m_rosNode->subscribe(m_nameSpace + "/servo_cp", 1, &afCRTKInterface::servo_CPCallback, this);
     m_servoJPSub = m_rosNode->subscribe(m_nameSpace + "/servo_jp", 1, &afCRTKInterface::servo_JPCallback, this);
     m_servoCFSub = m_rosNode->subscribe(m_nameSpace + "/servo_cf", 1 , &afCRTKInterface::servo_CFCallback, this);
@@ -71,37 +71,37 @@ void afCRTKInterface::add_allInterface(string a_namespace){
 void afCRTKInterface::add_operating_state(string a_namespace){
     string baseName;
     if(a_namespace == ""){
-        baseName = m_nameSpace;
+        baseName = m_nameSpace + "/operating_state";
     }
     else{
-        baseName = m_nameSpace + "/" + a_namespace;
+        baseName = a_namespace  + "/operating_state";
     }
-    m_operatingStatePub = m_rosNode->advertise<crtk_msgs::OperatingState>(baseName + "/operating_state", 1);
+    m_operatingStatePub = m_rosNode->advertise<crtk_msgs::OperatingState>(baseName , 1);
 }
 
 
 void afCRTKInterface::add_measured_cp(string a_namespace){
     string baseName;
     if(a_namespace == ""){
-        baseName = m_nameSpace;
+        baseName = m_nameSpace  + "/measured_cp";
     }
     else{
-        baseName = m_nameSpace + "/" + a_namespace;
+        baseName = a_namespace;
     }
-    m_measuredCPPub = m_rosNode->advertise<geometry_msgs::PoseStamped>(baseName + "/measured_cp", 1);
-    m_measuredCPPubMap[a_namespace] = m_rosNode->advertise<geometry_msgs::PoseStamped>(baseName + "/measured_cp", 1);
+    m_measuredCPPub = m_rosNode->advertise<geometry_msgs::PoseStamped>(baseName, 1);
+    m_measuredCPPubMap[a_namespace] = m_rosNode->advertise<geometry_msgs::PoseStamped>(baseName, 1);
 }
 
 
 void afCRTKInterface::add_measured_js(string a_namespace, vector<string> jointNames){
     string baseName;
     if(a_namespace == ""){
-        baseName = m_nameSpace;
+        baseName = m_nameSpace + "/measured_js";
     }
     else{
-        baseName = m_nameSpace + "/" + a_namespace;
+        baseName = a_namespace;
     }
-    m_measuredJSPub = m_rosNode->advertise<sensor_msgs::JointState>(baseName+ "/measured_js", 1);
+    m_measuredJSPub = m_rosNode->advertise<sensor_msgs::JointState>(baseName, 1);
     
     // Setup the joint names
     for (size_t i = 0; i < jointNames.size(); i++){
@@ -113,51 +113,53 @@ void afCRTKInterface::add_measured_js(string a_namespace, vector<string> jointNa
 void afCRTKInterface::add_measured_cf(string a_namespace){
     string baseName;
     if(a_namespace == ""){
-        baseName = m_nameSpace;
+        baseName = m_nameSpace + "/measured_cf";
     }
     else{
-        baseName = m_nameSpace + "/" + a_namespace;
+        baseName = a_namespace;
     }
-    m_measuredCFPub = m_rosNode->advertise<geometry_msgs::WrenchStamped>(baseName + "/measured_cf", 1);
-    m_measuredCFPubMap[a_namespace] = m_rosNode->advertise<geometry_msgs::WrenchStamped>(baseName + "/measured_cf", 1);  
+    m_measuredCFPub = m_rosNode->advertise<geometry_msgs::WrenchStamped>(baseName , 1);
+    m_measuredCFPubMap[a_namespace] = m_rosNode->advertise<geometry_msgs::WrenchStamped>(baseName, 1);  
 }
 
 
 void afCRTKInterface::add_servo_cp(string a_namespace){
     string baseName;
     if(a_namespace == ""){
-        baseName = m_nameSpace;
+        baseName = m_nameSpace + "/servo_cp";
     }
     else{
-        baseName = m_nameSpace + "/" + a_namespace;
+        baseName = a_namespace;
     }
-    m_servoCPSub = m_rosNode->subscribe(baseName + "/servo_cp", 1, &afCRTKInterface::servo_CPCallback, this);
-    m_servoCPSubMap[a_namespace] = m_rosNode->subscribe(baseName + "/servo_cp", 1, &afCRTKInterface::servo_CPCallback, this);
+    cerr << "Adding servo_cp with namespace: " << a_namespace << endl;
+    m_servoCPSub = m_rosNode->subscribe(baseName, 1, &afCRTKInterface::servo_CPCallback, this);
+    m_servoCPSubMap[a_namespace] = m_rosNode->subscribe(baseName, 1, &afCRTKInterface::servo_CPCallback, this);
 }
 
 
 void afCRTKInterface::add_servo_jp(string a_namespace){
     string baseName;
+    cerr << "Adding servo_jp with namespace: " << a_namespace << endl;
     if(a_namespace == ""){
-        baseName = m_nameSpace;
+        baseName = m_nameSpace + "/servo_jp";
     }
     else{
-        baseName = m_nameSpace + "/" + a_namespace;
+        baseName = a_namespace;
     }
-    m_servoJPSub = m_rosNode->subscribe(baseName + "/servo_jp", 1, &afCRTKInterface::servo_JPCallback, this);
+    m_servoJPSub = m_rosNode->subscribe(baseName, 1, &afCRTKInterface::servo_JPCallback, this);
 }
 
 
 void afCRTKInterface::add_servo_cf(string a_namespace){
     string baseName;
     if(a_namespace == ""){
-        baseName = m_nameSpace;
+        baseName = m_nameSpace + "/servo_cf";
     }
     else{
-        baseName = m_nameSpace + "/" + a_namespace;
+        baseName = a_namespace;
     }
-    m_servoCFSub = m_rosNode->subscribe(baseName + "/servo_cf", 1 , &afCRTKInterface::servo_CFCallback, this);
-    m_servoCFSubMap[a_namespace] = m_rosNode->subscribe(baseName + "/servo_cf", 1, &afCRTKInterface::servo_CFCallback, this);
+    m_servoCFSub = m_rosNode->subscribe(baseName , 1 , &afCRTKInterface::servo_CFCallback, this);
+    m_servoCFSubMap[a_namespace] = m_rosNode->subscribe(baseName, 1, &afCRTKInterface::servo_CFCallback, this);
 }
 
    
