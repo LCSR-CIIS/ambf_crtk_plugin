@@ -55,7 +55,7 @@ if (catkin_FOUND)
     catkin_package(
       INCLUDE_DIRS .
       LIBRARIES ${PROJECT_NAME}
-      CATKIN_DEPENDS roscpp tf kdl_conversions
+      CATKIN_DEPENDS
     )
 
 else(catkin_FOUND)
@@ -86,7 +86,7 @@ include_directories(${Boost_INCLUDE_DIRS})
 # )
 
 # link_directories(${AMBF_LIBRARY_DIRS})
-# add_definitions(${AMBF_DEFINITIONS})
+add_definitions(${AMBF_DEFINITIONS})
 
 # For Simulator Plugin
 add_library(ambf_crtk_simulator_plugin SHARED
@@ -119,7 +119,7 @@ add_library(ambf_crtk_object_plugin SHARED
     )
 
 set (ROS_CRTK_PLUGINS ambf_crtk_simulator_plugin ambf_crtk_model_plugin ambf_crtk_object_plugin )
-if (ROS_VERSION EQUAL 1)
+if (AMBF_ROS_VERSION EQUAL 1)
 
   foreach (_plugin ${ROS_CRTK_PLUGINS})
     add_dependencies (${_plugin} ${catkin_EXPORTED_TARGETS})

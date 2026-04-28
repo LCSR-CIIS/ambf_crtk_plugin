@@ -5,7 +5,7 @@ input devices config: ./ADF/input_devices/input_devices.yaml
 
 # plugins: [
 #  {
-#    path: ./build, 
+#    path:  ../build/ambf_crtk_plugin, 
 #    name: crtk_plugin,
 #    filename: libambf_crtk_simulator_plugin.so
 #  }
@@ -15,3 +15,11 @@ multibody configs:
   - "example/ADF/psm1.yaml" #0
   - "example/ADF/psm2.yaml" #1
   - "example/ADF/ecm.yaml"  #2
+
+  - "example/ADF/blender-ecm.yaml" #3
+  - "example/ADF/blender-psm1.yaml" #4
+  - "example/ADF/blender-psm2.yaml" #5
+
+  - "example/ADF/blender-mtm.yaml" #6
+
+

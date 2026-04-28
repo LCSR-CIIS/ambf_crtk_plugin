@@ -1,0 +1,94 @@
+# AMBF CRTK configuration file template for CRTK_simulator_plugin
+# Author: Hisashi Ishida
+# Date: 03.14.2024
+# Usage: add the path (build/lib_CRTK_simulator_plugin.so) and add --conf ../example/SRC_config.yaml
+# Interfaces used for this plugin
+interface:
+- PSM2
+
+PSM2:
+  measured_cp: [
+    {
+      rigidbody: psm2/BODY yaw link,
+      namespace: /PSM2/, # [Optional] Override namespace "/psm2/measured_cp"
+      reference: BODY tool link
+    },
+    # {
+    #   rigidbody: psm2/BODY base link,
+    #   reference: CameraFrame
+    # }
+  ]
+
+  setpoint_cp: [
+    {
+      rigidbody: psm2/BODY yaw link,
+      namespace: /PSM2/, # [Optional] Override namespace "/psm2/measured_cp"
+      reference: BODY tool link
+    }
+  ]
+
+  measured_js: [
+    {
+      namespace: /PSM2,
+      joints: [
+        psm2/JOINT base link-yaw link,
+        psm2/JOINT main insertion link-tool roll link,
+        psm2/JOINT pitch back link-pitch bottom link,
+        psm2/JOINT pitch back link-pitch top link,
+        psm2/JOINT pitch bottom link-pitch end link,
+        psm2/JOINT pitch end link-main insertion link,
+        psm2/JOINT pitch front link-pitch bottom link,
+        psm2/JOINT pitch top link-pitch end link,
+
+        psm2/JOINT tool roll link-tool pitch link,
+        psm2/JOINT yaw link-pitch back link,
+        psm2/JOINT yaw link-pitch end link,
+        psm2/JOINT yaw link-pitch front link
+      ]
+    },
+    {
+      joints: [
+        psm2/JOINT tool pitch link-tool gripper1 link,
+        psm2/JOINT tool pitch link-tool gripper2 link,
+      ],
+      namespace: /PSM2/gripper
+    }
+  ]
+    
+  servo_cp:
+  [
+    {
+      rigidbody: psm2/BODY yaw link,
+      namespace: /PSM2/, # [Optional] Override namespace "/psm2/measured_cp"
+      reference: BODY tool link
+    }
+  ]
+
+  servo_jp: [
+    {
+      namespace: /PSM2,
+      joints: [
+        psm2/JOINT base link-yaw link,
+        psm2/JOINT main insertion link-tool roll link,
+        psm2/JOINT pitch back link-pitch bottom link,
+        psm2/JOINT pitch back link-pitch top link,
+        psm2/JOINT pitch bottom link-pitch end link,
+        psm2/JOINT pitch end link-main insertion link,
+        psm2/JOINT pitch front link-pitch bottom link,
+        psm2/JOINT pitch top link-pitch end link,
+
+        psm2/JOINT tool roll link-tool pitch link,
+        psm2/JOINT yaw link-pitch back link,
+        psm2/JOINT yaw link-pitch end link,
+        psm2/JOINT yaw link-pitch front link,
+      ]
+    },
+    {
+      joints: [
+        psm2/JOINT tool pitch link-tool gripper1 link,
+        psm2/JOINT tool pitch link-tool gripper2 link,
+      ],
+      namespace: /PSM2/gripper
+    }
+  ]
+    

@@ -41,7 +41,7 @@ plugins: [
       name: ambf_model_plugin,
       path: ../build/ambf_crtk_plugin,
       filename: libambf_crtk_model_plugin.so,
-      crtk_config: ../../example/plguin-config/model_plugin/psm1_crtkconfig.yaml
+      crtk_config: ../../example/plugin-config/model_plugin/psm1_crtkconfig.yaml
     }
 ]
 
