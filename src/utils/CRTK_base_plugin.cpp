@@ -70,7 +70,7 @@ int afCRTKBasePlugin::readConfigFile(string config_filepath){
 
 int afCRTKBasePlugin::InitInterface(YAML::Node& node, Interface* interface){
     // Add operating state
-    interface->crtkInterface->add_operating_state(interface->m_name);
+    interface->crtkInterface->add_operating_state("");
     
     if (node[interface->m_name]["measured_cp"]){
         for (size_t i = 0; i < node[interface->m_name]["measured_cp"].size(); i++){
