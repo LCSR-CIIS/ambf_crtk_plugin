@@ -10,7 +10,7 @@ BODY CameraFrame:
   plugins: [
     {
       name: ambf_object_plugin,
-      path: /home/hishida3/ros2_ws/build/ambf_crtk_plugin,
+      path: ../build/ambf_crtk_plugin,
       filename: libambf_crtk_object_plugin.so
     }
   ]
@@ -65,7 +65,7 @@ cameraL:
   field view angle: *cam_common_fov 
   monitor: 1
   parent: BODY CameraFrame
-  publish image: True
+  # publish image: True
   publish image interval: 5
   publish image resolution: *cam_common_pub_img_res 
   publish depth: True
@@ -83,7 +83,7 @@ cameraR:
   field view angle: *cam_common_fov 
   monitor: 2
   parent: BODY CameraFrame
-  publish image: True
+  # publish image: True
   publish image interval: 5
   publish image resolution: *cam_common_pub_img_res
   publish depth: True

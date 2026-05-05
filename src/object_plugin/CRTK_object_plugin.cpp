@@ -67,78 +67,23 @@ void afCRTKObjectPlugin::graphicsUpdate(){
 
 
 void afCRTKObjectPlugin::physicsUpdate(double dt){
-    // // operating_state
-    // runOperatingState(m_interface[0]);
-
-    // measured_cp
-    if (m_interface[0]->m_measuredObjectPtr.size() > 0){
-        for (auto pairNamePtr : m_interface[0]->m_measuredObjectPtr){
-            cTransform measured_cp = pairNamePtr.second->getLocalTransform();
-            m_interface[0]->crtkInterface->measured_cp(measured_cp, pairNamePtr.first);
-        }
-    }
-
-     // servo_cp
-    if (m_interface[0]->m_servoObjectPtr.size() > 0){
-        cTransform servo_cp;
-        for (auto pairNamePtr : m_interface[0]->m_servoObjectPtr){
-            if(m_interface[0]->crtkInterface->servo_cp(servo_cp)){
-                pairNamePtr.second->setLocalTransform(servo_cp);
-            }   
-        }
-    }
+    runMeasuredCP(m_interface[0]);
+    runServoCP(m_interface[0], dt);
 }
 
 
 int afCRTKObjectPlugin::loadCRTKInterfacefromObject(){
     string ns = m_objectAttribs->m_identificationAttribs.m_namespace;
-    // cerr << ns.erase(0,9) << endl; // Erase "/ambf/env"
-    ns = ns.erase(0,10);
-    
-    string objectName = m_objectAttribs->m_identifier; // BODY name_of_rigidBody
-    vector<string> v;
-    boost::split(v, objectName, boost::is_any_of(" ")); 
-    objectName.erase(0,v[0].length()+1); //Remove BODY
-    objectName = objectName; //ns + rigidName
-    objectName = regex_replace(objectName, regex{" "}, string{"_"});
-
+    ns.pop_back();  // remove trailing '/'
+    ns = ns.substr(ns.find_last_of('/') + 1);    
     m_interface.push_back(new Interface(ns));
 
-    objectName = regex_replace(objectName, regex{" "}, string{"_"});
-    m_interface[0]->crtkInterface->add_measured_cp(objectName);
-    m_interface[0]->crtkInterface->add_servo_cp(objectName);
+    string objectName = m_objectPtr->getName(); // BODY name_of_rigidBody
+
+    m_interface[0]->crtkInterface->add_measured_cp(ns + "/" + objectName);
+    m_interface[0]->crtkInterface->add_servo_cp(ns + "/" + objectName);
     m_interface[0]->m_measuredObjectPtr[objectName] = m_objectPtr; 
     m_interface[0]->m_servoObjectPtr[objectName] = m_objectPtr; 
-    
-
-    // This part is not working
-    // No type defined in the m_identificationAttribs.m_objectType, since it is a baseObjectFrame
-    // if (m_objectAttribs->m_identificationAttribs.m_objectType == afType::RIGID_BODY){
-    //     cerr << "Object Type: RIGIDBODY" << endl;
-    //     objectName = regex_replace(objectName, regex{" "}, string{"_"});
-    //     m_interface[0]->crtkInterface->add_measured_cp(objectName);
-    //     m_interface[0]->crtkInterface->add_servo_cp(objectName);
-    //     m_interface[0]->m_measuredObjectPtr.push_back(m_objectPtr); 
-    //     m_interface[0]->m_servoObjectPtr.push_back(m_objectPtr); 
-    // }
-
-    // if (m_objectAttribs->m_identificationAttribs.m_objectType == afType::LIGHT){
-    //     cerr << "Object Type: LIGHT" << endl;
-    //     objectName = regex_replace(objectName, regex{" "}, string{"_"});
-    //     m_interface[0]->m_measuredObjectPtr.push_back(m_objectPtr);
-    //     m_interface[0]->m_servoObjectPtr.push_back(m_objectPtr);
-    //     m_interface[0]->crtkInterface->add_measured_cp(objectName);
-    //     m_interface[0]->crtkInterface->add_servo_cp(objectName);
-    // }
-
-    // if (m_objectAttribs->m_identificationAttribs.m_objectType == afType::CAMERA){
-    //     cerr << "Object Type: CAMERA" << endl;
-    //     objectName = regex_replace(objectName, regex{" "}, string{"_"});
-    //     m_interface[0]->m_measuredObjectPtr.push_back(m_objectPtr);
-    //     m_interface[0]->m_servoObjectPtr.push_back(m_objectPtr);
-    //     m_interface[0]->crtkInterface->add_measured_cp(objectName);
-    //     m_interface[0]->crtkInterface->add_servo_cp(objectName);
-    // }
 
     return 1;
 }
