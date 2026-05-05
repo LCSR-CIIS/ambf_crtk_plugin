@@ -5,62 +5,62 @@ This plugin will enable users to communicate with AMBF simulation using [Collabo
 Please visit [here](https://github.com/collaborative-robotics/documentation) for the CRTK docmuentation.
 
 
-## 1. Installation Instructions:
-Lets call the absolute location of this package as **<plugin_path>**. E.g. if you cloned this repo in your home folder, **<plugin_path>** = `~/ambf_crtk_plugin/` OR `/home/<username>/ambf_crtk_plugin`.
+## 1. Installation Instructions
 
-### 1.1 clone and build (For ROS2)
-Follow the instruction for ROS2 installation. Make sure you do not source ros1 in your .bashrc file.
-Current ROS2 implementation is only available as a Adnan's fork (`devel` branch). 
-Make sure to use the correct repo and branch. 
+This plugin requires AMBF 3.0 and CRTK messages. Make sure to clone AMBF using the `ambf-3.0` branch inside your ROS workspace.
 
-[Caution!] This is currently tested only for ROS2.
-
+### 1.1 Create a workspace
+For ROS 1:
 ```bash
-mkdir ros2_ws # Create ros2_ws
-cd ros2_ws
-cd src
-git clone git@github.com:adnanmunawar/ambf.git
-cd ambf
-git checkout devel # switch to devel branch
-cd .. # go back to src 
-git clone git@github.com:LCSR-CIIS/ambf_crtk_plugin.git
-cd ambf_crtk_plugin
-cd ..
+mkdir -p ~/ros1_ws/src
+cd ~/ros1_ws/src
 ```
 
-### 1.3 Source crtk_msgs
+For ROS 2:
+```bash
+mkdir -p ~/ros2_ws/src
+cd ~/ros2_ws/src
+```
+
+### 1.2 Clone AMBF
+Clone AMBF inside the src directory of your workspace.
+```bash
+git clone git@github.com:WPI-AIM/ambf.git
+cd ambf
+git checkout ambf-3.0
+git submodule update --init --recursive
+```
+
+### Clone this repo
+```bash
+cd ~/ros1_ws/src   # or ~/ros2_ws/src
+git clone git@github.com:LCSR-CIIS/ambf_crtk_plugin.git
+```
+
+### 1.3 Clone crtk_msgs
 Follow these instructions to get [crtk_msgs](https://github.com/collaborative-robotics/crtk_msgs) and don't forget to source it.
 ```bash
-git clone https://github.com/collaborative-robotics/ros2_crtk_msgs crtk/crtk_msgs
-git clone https://github.com/collaborative-robotics/ros2_crtk_python_client crtk/crtk_python_client
-cd ../ # make sure to colcon build in the root ros2_ws
+cd ~/ros1_ws/src # or ~/ros2_ws/src
+git clone https://github.com/collaborative-robotics/crtk_msgs.git
+git checkout devel
+```
 
+### Build and source
+For ROS 1:
+
+```bash
+ cd ~/ros1_ws
+catkin build
+source devel/setup.bash
+```
+For ROS 2:
+```bash
+cd ~/ros2_ws
 colcon build
-
-source catkin_ws/devel/setup.bash # ROS1
-source ros2_ws/install/setup.bash # ROS2
+source install/setup.bash
 ```
 
 ## 2. How to use your plugin
-You can test this plugin on the example by:
-
-For ROS1, you can set the alias "ambf_simulator" and save it in the bashrc. [Note] This is not needed for ROS1.
-<!-- `<ambf_exe_dir> ---> e.g. ~/ambf/bin/lin-x86_64` -->
-```bash
-cd <ambf_exe_dir> # e.g. ros_ws/build/AMBF/bin,
-# optional: To execute ambf_simulator without having to be in the directory, one can set an alias
-alias ambf_simulator=~/ros2_ws/build/AMBF/bin/ambf_simulator
-# Save and close the file and reload by either relaunching the terminal or typing 
-. ~/.bashrc
-```
-
-For ROS2, once you source the following command you should be able to use the alias `ambf_simulator`,
-```bash
-source ros2_ws/install/setup.bash # ROS2
-```
-
-With the alias set, ambf_simulator can be executed from a terminal from any location
-
 
 ### 2.1 Simulator plugin
 You are required to specify configuration file such as `example/CRTK_config.yaml`:
