@@ -43,7 +43,7 @@ set(CMAKE_CXX_STANDARD 11)
 find_package(AMBF)
 find_package(Boost COMPONENTS program_options filesystem)
 
-set (ROS1_depends ambf_server)
+set (ROS1_depends ambf_server crtk_msgs)
 find_package (catkin QUIET
   COMPONENTS ${ROS1_depends})
 
@@ -85,7 +85,7 @@ include_directories(${Boost_INCLUDE_DIRS})
 #   ${catkin_INCLUDE_DIRS}
 # )
 
-# link_directories(${AMBF_LIBRARY_DIRS})
+link_directories(${AMBF_LIBRARY_DIRS})
 add_definitions(${AMBF_DEFINITIONS})
 
 # For Simulator Plugin

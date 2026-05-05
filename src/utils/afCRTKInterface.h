@@ -58,8 +58,8 @@
 #include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/WrenchStamped.h>
 #include <sensor_msgs/JointState.h>
-#include <crtk_msgs/operating_state.h>
-#include <crtk_msgs/string_stamped.h>
+#include <crtk_msgs/OperatingState.h>
+#include <crtk_msgs/StringStamped.h>
 #elif AMBF_ROS2
 #include <rclcpp/rclcpp.hpp>
 #include "geometry_msgs/msg/pose_stamped.hpp"
@@ -120,28 +120,31 @@ private:
 
     #if AMBF_ROS1
         // Subscribers
-        ros::Subscriber m_servoCPSub;
-        ros::Subscriber m_servoJPSub;
-        ros::Subscriber m_servoCFSub;
+        std::shared_ptr<ros::Subscriber> m_servoCPSub;
+        std::shared_ptr<ros::Subscriber> m_servoJPSub;
+        std::shared_ptr<ros::Subscriber> m_servoCFSub;
 
-        map<string, ros::Subscriber> m_servoCPSubMap;
-        map<string, ros::Subscriber> m_servoJPSubMap;
-        map<string, ros::Subscriber> m_servoCFSubMap;
+        map<string, std::shared_ptr<ros::Subscriber>> m_servoCPSubMap;
+        map<string, std::shared_ptr<ros::Subscriber>> m_servoJPSubMap;
+        map<string, std::shared_ptr<ros::Subscriber>> m_servoCFSubMap;
 
         // Publishers
-        ros::Publisher m_operatingStatePub;
-        ros::Publisher m_stateCommand;
-        ros::Publisher m_measuredCPPub;
-        ros::Publisher m_measuredJSPub;
-        ros::Publisher m_measuredCFPub;
+        std::shared_ptr<ros::Publisher> m_operatingStatePub;
+        std::shared_ptr<ros::Publisher> m_stateCommandPub;
+        std::shared_ptr<ros::Publisher> m_measuredCPPub;
+        std::shared_ptr<ros::Publisher> m_setpointCPPub;
+        std::shared_ptr<ros::Publisher> m_measuredJSPub;
+        std::shared_ptr<ros::Publisher> m_measuredCFPub;
 
-        map<string, ros::Publisher> m_measuredCPPubMap;
-        map<string, ros::Publisher> m_measuredJSPubMap;
-        map<string, ros::Publisher> m_measuredCFPubMap;
+        map<string, std::shared_ptr<ros::Publisher>> m_measuredCPPubMap;
+        map<string, std::shared_ptr<ros::Publisher>> m_setpointCPPubMap;
+        map<string, std::shared_ptr<ros::Publisher>> m_measuredJSPubMap;
+        map<string, std::shared_ptr<ros::Publisher>> m_measuredCFPubMap;
 
         crtk_msgs::OperatingState m_operatingState;
         crtk_msgs::StringStamped m_state_command;
         geometry_msgs::PoseStamped m_measured_cp;   
+        geometry_msgs::PoseStamped m_setpoint_cp;   
         sensor_msgs::JointState m_measured_js;
         geometry_msgs::WrenchStamped m_measured_cf;
 

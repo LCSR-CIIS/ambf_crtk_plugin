@@ -280,22 +280,12 @@ void afCRTKInterface::run_operating_state(){
     m_operatingState.state = "ENABLED";
     m_operatingState.is_homed = true;
     m_operatingState.is_busy = false;
-
-    #if AMBF_ROS1
-        m_operatingStatePub.publish(m_operatingState);
-    #elif AMBF_ROS2
-        m_operatingStatePub->publish(m_operatingState);
-    #endif
+    m_operatingStatePub->publish(m_operatingState);
 }
 
 void afCRTKInterface::run_state_command(){
     m_state_command.string = "enable";
-    #if AMBF_ROS1
-        m_stateCommandPub.publish(m_state_command);
-    #elif AMBF_ROS2
-        m_stateCommandPub->publish(m_state_command);
-    #endif
-
+    m_stateCommandPub->publish(m_state_command);
 }
 
 void afCRTKInterface::measured_cp(cTransform &trans, string name){
@@ -311,21 +301,12 @@ void afCRTKInterface::measured_cp(cTransform &trans, string name){
     m_measured_cp.pose.orientation.z = rot.z;
     m_measured_cp.pose.orientation.w = rot.w;
 
-    #if AMBF_ROS1
-    if (name == "default"){
-        m_measuredCPPub.publish(m_measured_cp);
-    }
-    else{
-        m_measuredCPPubMap[name].publish(m_measured_cp);
-    }
-    #elif AMBF_ROS2
     if (name == "default"){
         m_measuredCPPub->publish(m_measured_cp);
     }
     else{
         m_measuredCPPubMap[name]->publish(m_measured_cp);
     }
-    #endif
 }
 
 void afCRTKInterface::setpoint_cp(cTransform &trans, string name){
@@ -341,21 +322,12 @@ void afCRTKInterface::setpoint_cp(cTransform &trans, string name){
     m_setpoint_cp.pose.orientation.z = rot.z;
     m_setpoint_cp.pose.orientation.w = rot.w;
 
-    #if AMBF_ROS1
-    if (name == "default"){
-        m_setpointCPPub.publish(m_setpoint_cp);
-    }
-    else{
-        m_setpointCPPubMap[name].publish(m_setpoint_cp);
-    }
-    #elif AMBF_ROS2
     if (name == "default"){
         m_setpointCPPub->publish(m_setpoint_cp);
     }
     else{
         m_setpointCPPubMap[name]->publish(m_setpoint_cp);
     }
-    #endif
     
 }
 
@@ -369,21 +341,12 @@ void afCRTKInterface::measured_js(vector<double>& q, vector<string> jointNames, 
 
     m_measured_js.name = jointNames;
 
-    #if AMBF_ROS1
-    if (name == "default"){
-        m_measuredJSPub.publish(m_measured_js);
-    }
-    else{
-        m_measuredJSPubMap[name].publish(m_measured_js);
-    }  
-    #elif AMBF_ROS2
     if (name == "default"){
         m_measuredJSPub->publish(m_measured_js);
     }
     else{
         m_measuredJSPubMap[name]->publish(m_measured_js);
     }  
-    #endif
     
 }
 
@@ -401,20 +364,11 @@ void afCRTKInterface::measured_cf(vector<double>& force, string name){
     m_measured_cf.wrench.torque.x = force[3];
     m_measured_cf.wrench.torque.y = force[4];
     m_measured_cf.wrench.torque.z = force[5];
-    #if AMBF_ROS1
-    if (name == "default"){
-        m_measuredCFPub.publish(m_measured_cf);
-    }
-    else{
-        m_measuredCFPubMap[name].publish(m_measured_cf);
-    }  
-    #elif AMBF_ROS2
+
     if (name == "default"){
         m_measuredCFPub->publish(m_measured_cf);
     }
     else{
         m_measuredCFPubMap[name]->publish(m_measured_cf);
-    }  
-    #endif
-    
+    }      
 }
